@@ -1,0 +1,38 @@
+name: AnforaResonate
+main: gc.grivyzom.AnforaXP.anforaMain
+version: 0.1
+api-version: 1.20
+author: Grivyzom
+description: Permite almacenar experiencia en un contenedor físico mejorable.
+depend: [Vault]
+softdepend: [PlaceholderAPI, MythicMobs]
+
+commands:
+  anfora:
+    description: Comando base de ánforas.
+    usage: /anfora <subcomando>
+
+permissions:
+  grivyzom.anforas_max.1:
+    description: Permite tener una ánfora resonante
+    default: true
+
+  grivyzom.anforas_max.*:
+    description: Permite tener ánforas ilimitadas
+    default: op
+
+  grivyzom.staff.anforas_inspect:
+    description: Inspecciona ánforas de otros jugadores
+    default: op
+
+  grivyzom.staff.anforas_transfer:
+    description: Permite transferir la propiedad de una ánfora a otro jugador
+    default: op
+
+  grivyzom.staff.anforas_upgrade:
+    description: Permite mejorar ánforas sin costo de XP
+    default: op
+
+  grivyzom.player.anforas_use:
+    description: Permite interactuar con ánforas propias
+    default: true
