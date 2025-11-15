@@ -4,6 +4,7 @@ import gc.grivyzom.AnforaXP.AnforaMain;
 import gc.grivyzom.AnforaXP.data.*;
 import gc.grivyzom.AnforaXP.utils.ItemFactory;
 import gc.grivyzom.AnforaXP.utils.MessageManager;
+import gc.grivyzom.AnforaXP.utils.ParticleAnimations;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -80,6 +81,8 @@ public class AnforaPlaceListener implements Listener {
             anforaDataManager.saveAnfora(anforaData);
             anforaUUIDManager.addPlacedAnfora(anforaUniqueId.toString());
 
+            // Reproducir animación de partículas al colocar el ánfora
+            ParticleAnimations.playAnforaPlaceAnimation(plugin, loc);
 
             Map<String, String> placeholders = new HashMap<>();
             placeholders.put("anfora_count", String.valueOf(playerData.getAnforaCount()));
