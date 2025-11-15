@@ -32,6 +32,12 @@ help_header: "&6--- Ayuda de Anfora Resonante ---"
 help_line: "&e{command} &7- &f{description}"
 help_footer: "&6-----------------------------"
 
+# Comando List
+list_header: "&6--- Tus Ánforas Resonantes ---"
+list_item: "&e{number}. Mundo: &f{world}&e, Coords: &f{x}, {y}, {z}, Nivel: &f{level}&e, Capacidad: &f{current_capacity}/{max_capacity}"
+list_no_anforas: "&cNo tienes ninguna Ánfora Resonante colocada en el mundo."
+list_footer: "&6--------------------------------"
+
 # Eventos de ánfora
 anfora_placed: "¡Has colocado una Anfora Resonante! Ahora tienes {anfora_count} ánforas colocadas."
 anfora_picked_up: "&eHas recogido tu Anfora Resonante. Ahora tienes {anfora_count} ánforas colocadas."
@@ -42,6 +48,11 @@ xp_withdrawn: "&aHas extraído {xp} puntos de experiencia del ánfora."
 exp_withdrawn_all: "&aHas retirado toda la experiencia ({exp_amount} puntos)."
 player_exp_empty: "&eNo tienes experiencia para depositar."
 exp_deposited_all: "&aHas depositado toda tu experiencia ({exp_amount} puntos) en el ánfora."
+error_anfora_level_info: "&cError: No se pudo obtener la información de nivel del ánfora. Contacta a un administrador."
+anfora_full: "&eEl ánfora está llena y no puede almacenar más experiencia."
+anfora_capacity_reached: "&eEl ánfora ha alcanzado su capacidad máxima. Se ha depositado {exp_amount} de experiencia."
+exp_bottle_created: "&aHas creado una botella de experiencia que ha costado {exp_amount} de experiencia."
+not_enough_exp_for_bottle: "&cEl ánfora no tiene suficiente experiencia para crear una botella."
 gui_coming_soon: "&7(Futuro) Aquí se abrirá la GUI del ánfora."
 
 # Errores

@@ -19,6 +19,7 @@ public class AnforaData {
         this.uniqueId = uniqueId;
         this.ownerUUID = ownerUUID;
         this.ownerName = ownerName;
+        this.level = 1; // Initialize level to 1
     }
 
     // Getters and setters
@@ -64,5 +65,10 @@ public class AnforaData {
 
     public void addExperience(double amount) {
         this.experience += amount;
+    }
+
+    public double getMaxExperience() {
+        // Placeholder formula: Max experience increases with level
+        return this.level * 1000;
     }
 }
