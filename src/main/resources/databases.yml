@@ -1,0 +1,16 @@
+# MySQL / MariaDB
+mysql:
+  host: "localhost"
+  port: 3306
+  database: "anforadb"
+  user: "root"
+  password: "12345"
+  use-ssl: false
+
+# SQLite
+sqlite:
+  file: "anfora.db"
+
+# YAML (almacenamiento plano)
+yaml:
+  folder: "data"

@@ -1,0 +1,50 @@
+# ----------------------------------------------------------------------------------
+# Mensajes del plugin Anfora Resonante
+#
+# Puedes usar códigos de color con el símbolo '&'.
+# Ejemplo: '&aEste es un mensaje verde.'
+#
+# Placeholders disponibles:
+# {player} - Nombre del jugador
+# {owner} - Dueño de la ánfora
+# {amount} - Cantidad
+# {anfora_count} - Número de ánforas
+# {xp} - Experiencia
+# {command} - Comando
+# {description} - Descripción del comando
+# ----------------------------------------------------------------------------------
+
+version: 1.0
+
+# Mensajes generales
+no_permission: "&cNo tienes permiso para usar este comando."
+player_not_found: "&cEl jugador '{player}' no está en línea."
+invalid_amount: "&cLa cantidad debe ser al menos 1."
+invalid_number: "&c'{number}' no es un número válido."
+unknown_command: "&cComando desconocido. Usa /anfora help para ver los comandos."
+
+# Comandos
+give_usage: "&cUso: /anfora give <jugador> [cantidad]"
+give_success: "&aHas dado {amount} Anfora(s) Resonante(s) a {player}."
+receive_success: "&6¡Has recibido {amount} Anfora(s) Resonante(s)!"
+
+help_header: "&6--- Ayuda de Anfora Resonante ---"
+help_line: "&e{command} &7- &f{description}"
+help_footer: "&6-----------------------------"
+
+# Eventos de ánfora
+anfora_placed: "¡Has colocado una Anfora Resonante! Ahora tienes {anfora_count} ánforas colocadas."
+anfora_picked_up: "&eHas recogido tu Anfora Resonante. Ahora tienes {anfora_count} ánforas colocadas."
+not_your_anfora_break: "&cNo puedes romper la Anfora Resonante de otro jugador."
+not_your_anfora_interact: "&cNo puedes interactuar con la Anfora Resonante de {owner}."
+anfora_empty: "&eEl ánfora ya está vacía."
+xp_withdrawn: "&aHas extraído {xp} puntos de experiencia del ánfora."
+exp_withdrawn_all: "&aHas retirado toda la experiencia ({exp_amount} puntos)."
+gui_coming_soon: "&7(Futuro) Aquí se abrirá la GUI del ánfora."
+
+# Errores
+invalid_item: "&cError: El ítem de ánfora no tiene un ID único válido. Contacta a un administrador."
+anfora_dupe_error: "&cError: Se ha detectado un ánfora duplicada o inválida. Colocación cancelada."
+
+# Otros
+account_activated: "&a¡Tu cuenta de Anfora Resonante ha sido activada!"

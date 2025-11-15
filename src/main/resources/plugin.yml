@@ -1,7 +1,7 @@
 name: AnforaResonate
-main: gc.grivyzom.AnforaXP.anforaMain
-version: 0.1
-api-version: 1.20
+main: gc.grivyzom.AnforaXP.AnforaMain
+version: 1.0-SNAPSHOT
+api-version: 1.21
 author: Grivyzom
 description: Permite almacenar experiencia en un contenedor físico mejorable.
 depend: [Vault]

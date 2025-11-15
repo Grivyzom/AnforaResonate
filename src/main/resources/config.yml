@@ -1,0 +1,17 @@
+# Configuración general del complemento Ánfora Resonante
+# Motor de base de datos disponible:
+# - yaml (por defecto)
+# - sqlite
+# - mysql
+
+database-type: yaml
+
+# --- Configuración del Ítem Anfora Resonante ---
+anfora-item:
+  name: "&6Anfora Resonante"
+  lore:
+    - "&eContiene la esencia de la experiencia."
+    - "&7Se rompe para liberar su poder."
+  hide-enchant: true # Si es true, el encantamiento no se mostrará en el ítem.
+  enchantment: "UNBREAKING" # Tipo de encantamiento (ej: UNBREAKING, PROTECTION, LUCK)
+  enchantment-level: 1 # Nivel del encantamiento

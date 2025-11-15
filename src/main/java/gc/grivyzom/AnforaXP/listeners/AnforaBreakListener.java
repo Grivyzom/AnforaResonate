@@ -1,4 +1,74 @@
 package gc.grivyzom.AnforaXP.listeners;
 
-public class AnforaBreakListener {
+import gc.grivyzom.AnforaXP.AnforaMain;
+import gc.grivyzom.AnforaXP.data.*;
+import gc.grivyzom.AnforaXP.utils.ItemFactory;
+import gc.grivyzom.AnforaXP.utils.MessageManager;
+import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class AnforaBreakListener implements Listener {
+
+    private final AnforaMain plugin;
+    private final PlayerDataManager playerDataManager;
+    private final AnforaDataManager anforaDataManager;
+    private final AnforaUUIDManager anforaUUIDManager;
+    private final MessageManager messageManager;
+
+    public AnforaBreakListener(AnforaMain plugin) {
+        this.plugin = plugin;
+        this.playerDataManager = plugin.getPlayerDataManager();
+        this.anforaDataManager = plugin.getAnforaDataManager();
+        this.anforaUUIDManager = plugin.getAnforaUUIDManager();
+        this.messageManager = plugin.getMessageManager();
+    }
+
+    @EventHandler
+    public void onAnforaBreak(BlockBreakEvent event) {
+        Block block = event.getBlock();
+        Location loc = block.getLocation();
+        String anforaId = String.format("%s_%d_%d_%d", loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+
+        AnforaData anforaData = anforaDataManager.loadAnfora(anforaId);
+        if (anforaData != null) {
+            Player breaker = event.getPlayer();
+            event.setDropItems(false);
+
+            if (breaker.getUniqueId().equals(anforaData.getOwnerUUID())) {
+                // --- EL JUGADOR ES EL PROPIETARIO ---
+
+                // 1. Crear el ítem personalizado, pasando el UUID, nivel, experiencia y nombre del propietario.
+                ItemStack anforaItem = ItemFactory.createAnforaItem(plugin, 1, anforaData.getUniqueId(), anforaData.getLevel(), anforaData.getExperience(), anforaData.getOwnerName());
+
+                // 2. Dropear el ítem personalizado.
+                loc.getWorld().dropItemNaturally(loc, anforaItem);
+
+                // 3. Actualizar PlayerData: anforaCount disminuye porque ya no está colocada.
+                PlayerData playerData = playerDataManager.loadPlayer(breaker.getUniqueId());
+                playerData.setAnforaCount(Math.max(0, playerData.getAnforaCount() - 1));
+                playerDataManager.savePlayer(breaker.getUniqueId(), playerData);
+
+                Map<String, String> placeholders = new HashMap<>();
+                placeholders.put("anfora_count", String.valueOf(playerData.getAnforaCount()));
+                breaker.sendMessage(messageManager.getMessage("anfora_picked_up", placeholders));
+
+                // 4. Eliminar el ánfora de la base de datos y del rastreador de UUIDs.
+                anforaDataManager.deleteAnfora(anforaId);
+                anforaUUIDManager.removePlacedAnfora(anforaData.getUniqueId().toString());
+
+            } else {
+                // --- INTENTO DE OTRO JUGADOR ---
+                event.setCancelled(true);
+                breaker.sendMessage(messageManager.getMessage("not_your_anfora_break"));
+            }
+        }
+    }
 }
