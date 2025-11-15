@@ -47,4 +47,8 @@ public class AnforaUUIDManager {
     public int getPlacedAnforaCount() {
         return placedAnforaUUIDs.size();
     }
+
+    public Set<String> getPlacedAnforaUUIDs() {
+        return new HashSet<>(placedAnforaUUIDs); // Return a copy to prevent external modification
+    }
 }

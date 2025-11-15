@@ -13,4 +13,6 @@ public interface StorageEngine {
     AnforaData loadAnfora(String anforaId);
     void deleteAnfora(String anforaId);
     Set<String> getAllPlacedAnforaUUIDs();
+    Set<String> getAllAnforaIds(); // New method to get all location-based anfora IDs
+    Map<String, String> getUniqueIdToAnforaIdMap(); // New method to get uniqueId -> anforaId mapping
 }

@@ -162,11 +162,30 @@ public class YamlStorage implements StorageEngine {
 
     @Override
     public Set<String> getAllPlacedAnforaUUIDs() {
-        Set<String> anforaIds = new HashSet<>();
-        // Itera sobre todas las claves de primer nivel (los anforaId)
+        Set<String> uuids = new HashSet<>();
         for (String anforaId : anforasConfig.getKeys(false)) {
-            anforaIds.add(anforaId);
+            String uniqueId = anforasConfig.getString(anforaId + ".uniqueId");
+            if (uniqueId != null && !uniqueId.isEmpty()) {
+                uuids.add(uniqueId);
+            }
         }
-        return anforaIds;
+        return uuids;
+    }
+
+    @Override
+    public Set<String> getAllAnforaIds() {
+        return anforasConfig.getKeys(false);
+    }
+
+    @Override
+    public java.util.Map<String, String> getUniqueIdToAnforaIdMap() {
+        java.util.Map<String, String> map = new java.util.HashMap<>();
+        for (String anforaId : anforasConfig.getKeys(false)) {
+            String uniqueId = anforasConfig.getString(anforaId + ".uniqueId");
+            if (uniqueId != null && !uniqueId.isEmpty()) {
+                map.put(uniqueId, anforaId);
+            }
+        }
+        return map;
     }
 }
