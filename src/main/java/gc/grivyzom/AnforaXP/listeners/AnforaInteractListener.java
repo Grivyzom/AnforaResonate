@@ -34,8 +34,8 @@ public class AnforaInteractListener implements Listener {
         Player player = event.getPlayer();
         Block clickedBlock = event.getClickedBlock();
 
-        // Check for right-click on a block
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || clickedBlock == null) {
+        // Check for right-click on a block and not sneaking
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || clickedBlock == null || player.isSneaking()) {
             return;
         }
 
@@ -57,27 +57,9 @@ public class AnforaInteractListener implements Listener {
                 // Cancel the event to handle the action manually
                 event.setCancelled(true);
 
-                if (player.isSneaking()) {
-                    // --- SHIFT-CLICK LOGIC: Withdraw all experience ---
-                    double experienceToWithdraw = anforaData.getExperience();
-                    if (experienceToWithdraw <= 0) {
-                        player.sendMessage(messageManager.getMessage("anfora_empty"));
-                        return;
-                    }
-
-                    // Transfer experience
-                    player.giveExp((int) Math.round(experienceToWithdraw));
-                    anforaData.setExperience(0);
-                    anforaDataManager.saveAnfora(anforaData);
-
-                    Map<String, String> placeholders = new HashMap<>();
-                    placeholders.put("exp_amount", String.format("%.0f", experienceToWithdraw));
-                    player.sendMessage(messageManager.getMessage("exp_withdrawn_all", placeholders));
-                } else {
-                    // --- NORMAL CLICK LOGIC: Open GUI ---
-                    guiListener.addPlayer(player.getUniqueId(), anforaId);
-                    plugin.getGuiManager().openAnforaGui(player, anforaData);
-                }
+                // --- NORMAL CLICK LOGIC: Open GUI ---
+                guiListener.addPlayer(player.getUniqueId(), anforaId);
+                plugin.getGuiManager().openAnforaGui(player, anforaData);
             }
         }
     }

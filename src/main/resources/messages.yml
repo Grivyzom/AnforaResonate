@@ -40,6 +40,8 @@ not_your_anfora_interact: "&cNo puedes interactuar con la Anfora Resonante de {o
 anfora_empty: "&eEl ánfora ya está vacía."
 xp_withdrawn: "&aHas extraído {xp} puntos de experiencia del ánfora."
 exp_withdrawn_all: "&aHas retirado toda la experiencia ({exp_amount} puntos)."
+player_exp_empty: "&eNo tienes experiencia para depositar."
+exp_deposited_all: "&aHas depositado toda tu experiencia ({exp_amount} puntos) en el ánfora."
 gui_coming_soon: "&7(Futuro) Aquí se abrirá la GUI del ánfora."
 
 # Errores

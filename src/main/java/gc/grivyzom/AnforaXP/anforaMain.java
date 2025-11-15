@@ -58,13 +58,14 @@ public class AnforaMain extends JavaPlugin {
 
     private void registerListeners(){
         PluginManager pm = getServer().getPluginManager();
+        this.guiListener = new GuiListener(this);
         pm.registerEvents(new AnforaPlaceListener(this), this);
         pm.registerEvents(new AnforaBreakListener(this), this);
         pm.registerEvents(new AnforaInteractListener(this),this);
+        pm.registerEvents(new AnforaShiftActionListener(this), this);
         pm.registerEvents(new AnforaExplosionListener(this), this);
         pm.registerEvents(new PlayerConnectionListener(this), this);
 
-        this.guiListener = new GuiListener(this);
         pm.registerEvents(this.guiListener, this);
     }
 

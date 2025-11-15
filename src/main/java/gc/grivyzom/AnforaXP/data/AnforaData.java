@@ -61,4 +61,8 @@ public class AnforaData {
     public void setExperience(double experience) {
         this.experience = experience;
     }
+
+    public void addExperience(double amount) {
+        this.experience += amount;
+    }
 }
