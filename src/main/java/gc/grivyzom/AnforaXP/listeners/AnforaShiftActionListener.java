@@ -4,6 +4,8 @@ import gc.grivyzom.AnforaXP.AnforaMain;
 import gc.grivyzom.AnforaXP.data.AnforaData;
 import gc.grivyzom.AnforaXP.data.AnforaDataManager;
 import gc.grivyzom.AnforaXP.utils.MessageManager;
+import gc.grivyzom.AnforaXP.utils.LevelManager;
+import gc.grivyzom.AnforaXP.utils.LevelManager.LevelInfo;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -80,16 +82,35 @@ public class AnforaShiftActionListener implements Listener {
                         return;
                     }
 
+                    LevelInfo anforaLevelInfo = LevelManager.getLevelInfo(anforaData.getLevel());
+                    if (anforaLevelInfo == null) {
+                        player.sendMessage(messageManager.getMessage("error_anfora_level_info"));
+                        return;
+                    }
+
+                    double maxExperience = anforaLevelInfo.getMaxExperience();
+                    double currentAnforaExperience = anforaData.getExperience();
+                    double spaceAvailable = maxExperience - currentAnforaExperience;
+
+                    if (spaceAvailable <= 0) {
+                        player.sendMessage(messageManager.getMessage("anfora_full"));
+                        return;
+                    }
+
+                    double experienceToDeposit = Math.min(playerExperience, spaceAvailable);
+
                     // Deposit experience
-                    anforaData.addExperience(playerExperience);
-                    player.setTotalExperience(0);
-                    player.setLevel(0);
-                    player.setExp(0);
+                    anforaData.addExperience(experienceToDeposit);
+                    player.giveExp(-((int) Math.round(experienceToDeposit))); // Remove deposited experience from player
                     anforaDataManager.saveAnfora(anforaData);
 
                     Map<String, String> placeholders = new HashMap<>();
-                    placeholders.put("exp_amount", String.format("%d", playerExperience));
+                    placeholders.put("exp_amount", String.format("%.0f", experienceToDeposit));
                     player.sendMessage(messageManager.getMessage("exp_deposited_all", placeholders));
+
+                    if (experienceToDeposit < playerExperience) {
+                        player.sendMessage(messageManager.getMessage("anfora_capacity_reached"));
+                    }
                 }
             }
         }

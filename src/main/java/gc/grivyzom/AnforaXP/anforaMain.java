@@ -24,6 +24,8 @@ public class AnforaMain extends JavaPlugin {
         // Inicializar las NamespacedKeys de la ItemFactory
         gc.grivyzom.AnforaXP.utils.ItemFactory.initKeys(this);
 
+        // Inicializar ParticleSFX
+
         // 1. Cargar configuraciones
         saveDefaultConfig();
         saveResource("databases.yml", false);
@@ -42,8 +44,8 @@ public class AnforaMain extends JavaPlugin {
 
         // 4. Inicializar los gestores de datos
         this.playerDataManager = new PlayerDataManager(storage);
-        this.anforaDataManager = new AnforaDataManager(storage);
         this.anforaUUIDManager = new AnforaUUIDManager(storage);
+        this.anforaDataManager = new AnforaDataManager(storage, anforaUUIDManager);
         getLogger().info("Cargados " + anforaUUIDManager.getPlacedAnforaCount() + " UUIDs de ánforas existentes.");
 
 

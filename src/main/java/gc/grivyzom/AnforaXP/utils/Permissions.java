@@ -8,5 +8,6 @@ public final class Permissions {
 
     public static final String ADMIN_GIVE = "anforaxp.admin.give";
     public static final String COMMAND_HELP = "anforaxp.command.help";
+    public static final String COMMAND_LIST = "anforaxp.command.list";
     // Add other permissions here as they are identified
 }

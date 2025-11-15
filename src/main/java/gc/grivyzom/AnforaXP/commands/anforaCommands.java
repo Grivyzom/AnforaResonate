@@ -40,35 +40,90 @@ public class AnforaCommands implements CommandExecutor, TabCompleter {
                 "/anfora help",
                 Permissions.COMMAND_HELP // Use the constant
         ));
+        registeredCommands.add(new CommandInfo(
+                "list",
+                "Muestra la ubicación de tus ánforas.",
+                "/anfora list",
+                Permissions.COMMAND_LIST
+        ));
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
+        if (args.length == 0) {
             handleHelpCommand(sender);
             return true;
         }
 
-        if (args[0].equalsIgnoreCase("give")) {
-            handleGiveCommand(sender, args);
-            return true;
-        }
+        String subCommand = args[0].toLowerCase();
 
-        sender.sendMessage(messageManager.getMessage("unknown_command"));
+        switch (subCommand) {
+            case "help":
+                handleHelpCommand(sender);
+                break;
+            case "give":
+                handleGiveCommand(sender, args);
+                break;
+
+            case "list":
+                handleListCommand(sender);
+                break;
+            default:
+                sender.sendMessage(messageManager.getMessage("unknown_command"));
+                break;
+        }
         return true;
     }
 
+    private void handleListCommand(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("Este comando solo puede ser usado por un jugador.");
+            return;
+        }
+
+        if (!sender.hasPermission(Permissions.COMMAND_LIST)) {
+            sender.sendMessage(messageManager.getMessage("no_permission"));
+            return;
+        }
+
+        Player player = (Player) sender;
+        List<gc.grivyzom.AnforaXP.data.AnforaData> anforas = plugin.getAnforaDataManager().getAnforasByOwner(player.getUniqueId());
+
+        if (anforas.isEmpty()) {
+            sender.sendMessage(messageManager.getMessage("list_no_anforas"));
+            return;
+        }
+
+        sender.sendMessage(messageManager.getMessage("list_header"));
+        int i = 1;
+        for (gc.grivyzom.AnforaXP.data.AnforaData anfora : anforas) {
+            if (anfora.getLocation() != null) {
+                Map<String, String> placeholders = new HashMap<>();
+                placeholders.put("number", String.valueOf(i++));
+                placeholders.put("world", anfora.getLocation().getWorld().getName());
+                placeholders.put("x", String.valueOf(anfora.getLocation().getBlockX()));
+                placeholders.put("y", String.valueOf(anfora.getLocation().getBlockY()));
+                placeholders.put("z", String.valueOf(anfora.getLocation().getBlockZ()));
+                placeholders.put("level", String.valueOf(anfora.getLevel()));
+                placeholders.put("current_capacity", String.valueOf((int) anfora.getExperience()));
+                placeholders.put("max_capacity", String.valueOf((int) anfora.getMaxExperience()));
+                sender.sendMessage(messageManager.getMessage("list_item", placeholders));
+            }
+        }
+        sender.sendMessage(messageManager.getMessage("list_footer"));
+    }
+    
     private void handleGiveCommand(CommandSender sender, String[] args) {
         if (!sender.hasPermission(Permissions.ADMIN_GIVE)) { // Use the constant
             sender.sendMessage(messageManager.getMessage("no_permission"));
             return;
         }
-
+        
         if (args.length < 2) {
             sender.sendMessage(messageManager.getMessage("give_usage"));
             return;
         }
-
+        
         Player target = Bukkit.getPlayer(args[1]);
         if (target == null) {
             Map<String, String> placeholders = new HashMap<>();
@@ -76,7 +131,7 @@ public class AnforaCommands implements CommandExecutor, TabCompleter {
             sender.sendMessage(messageManager.getMessage("player_not_found", placeholders));
             return;
         }
-
+        
         int amount = 1;
         if (args.length > 2) {
             try {
@@ -92,26 +147,26 @@ public class AnforaCommands implements CommandExecutor, TabCompleter {
                 return;
             }
         }
-
+        
         ItemStack anforaItem = ItemFactory.createAnforaItem(plugin, amount);
         target.getInventory().addItem(anforaItem);
-
+        
         Map<String, String> placeholdersSender = new HashMap<>();
         placeholdersSender.put("amount", String.valueOf(amount));
         placeholdersSender.put("player", target.getName());
         sender.sendMessage(messageManager.getMessage("give_success", placeholdersSender));
-
+        
         Map<String, String> placeholdersTarget = new HashMap<>();
         placeholdersTarget.put("amount", String.valueOf(amount));
         target.sendMessage(messageManager.getMessage("receive_success", placeholdersTarget));
     }
-
+    
     private void handleHelpCommand(CommandSender sender) {
         if (!sender.hasPermission(Permissions.COMMAND_HELP)) { // Use the constant
             sender.sendMessage(messageManager.getMessage("no_permission"));
             return;
         }
-
+        
         sender.sendMessage(messageManager.getMessage("help_header"));
         for (CommandInfo cmd : registeredCommands) {
             if (sender.hasPermission(cmd.permission)) {
@@ -123,12 +178,12 @@ public class AnforaCommands implements CommandExecutor, TabCompleter {
         }
         sender.sendMessage(messageManager.getMessage("help_footer"));
     }
-
+    
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> completions = new ArrayList<>();
         List<String> commands = new ArrayList<>();
-
+        
         if (args.length == 1) {
             for (CommandInfo cmd : registeredCommands) {
                 if (sender.hasPermission(cmd.permission)) {
@@ -147,17 +202,17 @@ public class AnforaCommands implements CommandExecutor, TabCompleter {
                 StringUtil.copyPartialMatches(args[2], commands, completions);
             }
         }
-
+        
         Collections.sort(completions);
         return completions;
     }
-
+    
     private static class CommandInfo {
         String name;
         String description;
         String usage;
         String permission;
-
+        
         public CommandInfo(String name, String description, String usage, String permission) {
             this.name = name;
             this.description = description;

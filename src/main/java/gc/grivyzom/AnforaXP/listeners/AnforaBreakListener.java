@@ -5,6 +5,7 @@ import gc.grivyzom.AnforaXP.data.*;
 import gc.grivyzom.AnforaXP.utils.ItemFactory;
 import gc.grivyzom.AnforaXP.utils.MessageManager;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -63,6 +64,9 @@ public class AnforaBreakListener implements Listener {
                 // 4. Eliminar el ánfora de la base de datos y del rastreador de UUIDs.
                 anforaDataManager.deleteAnfora(anforaId);
                 anforaUUIDManager.removePlacedAnfora(anforaData.getUniqueId().toString());
+
+                // 5. Reproducir sonido de desactivación del faro.
+                breaker.playSound(breaker.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 1.0f, 0.2f);
 
             } else {
                 // --- INTENTO DE OTRO JUGADOR ---

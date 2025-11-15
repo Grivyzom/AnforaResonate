@@ -12,6 +12,7 @@ Anfora Resonante es un plugin de Spigot que introduce un nuevo bloque personaliz
 -   **Sistema Anti-Duplicación:** Incluye un sistema de seguimiento de UUIDs para prevenir la duplicación de ánforas, garantizando que cada ánfora sea única en el servidor.
 -   **Interacción con Ánforas:**
     -   **Shift + Clic Derecho:** Permite al propietario **extraer toda la experiencia** almacenada en el ánfora y transferirla a su barra de experiencia.
+    -   **Shift + Clic Izquierdo:** Permite al propietario **depositar toda su experiencia** en el ánfora.
     -   **Clic Derecho (sin Shift):** Abre una interfaz gráfica (GUI) que permite gestionar la experiencia del ánfora, mejorarla y ver su información.
 -   **Almacenamiento Flexible:** Soporte para múltiples backends de base de datos:
     -   **YAML:** Ideal para servidores pequeños o para empezar.
@@ -25,6 +26,7 @@ Anfora Resonante es un plugin de Spigot que introduce un nuevo bloque personaliz
 | Comando                               | Descripción                                       | Permiso                  |
 | ------------------------------------- | ------------------------------------------------- | ------------------------ |
 | `/anfora give <jugador> [cantidad]`   | Da un ánfora nueva (Nivel 1, 0 XP) a un jugador.  | `anforaxp.admin.give`    |
+| `/anfora list`                        | Muestra la ubicación de tus ánforas colocadas.    | `anforaxp.command.list`  |
 | `/anfora help`                        | Muestra todos los comandos disponibles para ti.   | `anforaxp.command.help`  |
 
 El sistema de autocompletado (Tab) sugiere subcomandos, nombres de jugadores en línea y cantidades.
@@ -34,7 +36,7 @@ El sistema de autocompletado (Tab) sugiere subcomandos, nombres de jugadores en 
 Al hacer clic derecho en un ánfora, se abre una interfaz de 3 filas con la siguiente disposición:
 
 -   **Fila Superior:**
-    -   En el centro, una **Estrella del Nether** permite al jugador mejorar el ánfora.
+    -   En el centro, una **Estrella del Nether** permite al jugador mejorar el ánfora (función futura).
 
 -   **Fila Central:**
     -   A la izquierda, tres tintes rojos para **depositar 1, 5 o 10 niveles** de experiencia.
@@ -43,6 +45,11 @@ Al hacer clic derecho en un ánfora, se abre una interfaz de 3 filas con la sigu
 
 -   **Fila Inferior:**
     -   En el centro, un **Libro** muestra información detallada sobre el ánfora, como el nombre del propietario, el nivel y la capacidad.
+
+## 🔊 Efectos de Sonido
+
+-   **Abrir Ánfora:** Al abrir la GUI del ánfora, se reproduce el sonido de un huevo de gallina.
+-   **Clic en GUI:** Al hacer clic en los botones de depósito o retiro, se reproduce un sonido de clic.
 
 ## ⚙️ Configuración (`config.yml`)
 
