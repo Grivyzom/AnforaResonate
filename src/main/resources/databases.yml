@@ -1,4 +1,4 @@
-# MySQL / MariaDB
+# MySQL / MariaDB con HikariCP Connection Pool
 mysql:
   host: "localhost"
   port: 3306
@@ -6,6 +6,26 @@ mysql:
   user: "root"
   password: "12345"
   use-ssl: false
+  
+  # Configuración del Connection Pool (HikariCP)
+  pool:
+    # Tamaño máximo del pool (conexiones simultáneas)
+    maximum-pool-size: 10
+    
+    # Conexiones mínimas idle (siempre disponibles)
+    minimum-idle: 2
+    
+    # Timeout para obtener conexión del pool (ms)
+    connection-timeout: 10000
+    
+    # Tiempo máximo de inactividad antes de cerrar conexión (ms) - 10 minutos
+    idle-timeout: 600000
+    
+    # Tiempo máximo de vida de una conexión (ms) - 30 minutos
+    max-lifetime: 1800000
+    
+    # Detectar conexiones no cerradas después de X ms - 1 minuto
+    leak-detection-threshold: 60000
 
 # SQLite
 sqlite:

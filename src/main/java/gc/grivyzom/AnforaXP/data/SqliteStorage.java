@@ -195,10 +195,10 @@ public class SqliteStorage implements StorageEngine {
     @Override
     public Set<String> getAllPlacedAnforaUUIDs() {
         Set<String> uuids = new HashSet<>();
-        String sql = "SELECT uniqueId FROM anforas;";
+        String sql = "SELECT uniqueId FROM anforas";
 
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (PreparedStatement pstmt = connection.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
                 uuids.add(rs.getString("uniqueId"));
@@ -212,10 +212,10 @@ public class SqliteStorage implements StorageEngine {
     @Override
     public Set<String> getAllAnforaIds() {
         Set<String> ids = new HashSet<>();
-        String sql = "SELECT id FROM anforas;";
+        String sql = "SELECT id FROM anforas";
 
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (PreparedStatement pstmt = connection.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
                 ids.add(rs.getString("id"));
@@ -229,10 +229,10 @@ public class SqliteStorage implements StorageEngine {
     @Override
     public Map<String, String> getUniqueIdToAnforaIdMap() {
         Map<String, String> map = new HashMap<>();
-        String sql = "SELECT uniqueId, id FROM anforas;";
+        String sql = "SELECT uniqueId, id FROM anforas";
 
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (PreparedStatement pstmt = connection.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
                 String uniqueId = rs.getString("uniqueId");
@@ -243,5 +243,17 @@ public class SqliteStorage implements StorageEngine {
             plugin.getLogger().log(Level.SEVERE, "No se pudo cargar el mapeo uniqueId -> anforaId desde la base de datos.", e);
         }
         return map;
+    }
+
+    @Override
+    public void close() {
+        if (connection != null) {
+            try {
+                connection.close();
+                plugin.getLogger().info("✓ Conexión SQLite cerrada correctamente");
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.SEVERE, "Error al cerrar la conexión SQLite", e);
+            }
+        }
     }
 }

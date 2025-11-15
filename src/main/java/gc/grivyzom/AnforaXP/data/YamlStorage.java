@@ -2,7 +2,6 @@ package gc.grivyzom.AnforaXP.data;
 
 import gc.grivyzom.AnforaXP.AnforaMain;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.Location; // Importar Location para el constructor de AnforaData
 
 import java.io.File;
 import java.io.IOException;
@@ -187,5 +186,11 @@ public class YamlStorage implements StorageEngine {
             }
         }
         return map;
+    }
+
+    @Override
+    public void close() {
+        // YamlStorage no requiere cerrar conexiones
+        plugin.getLogger().info("✓ YamlStorage cerrado correctamente");
     }
 }

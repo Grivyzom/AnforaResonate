@@ -3,8 +3,10 @@ package gc.grivyzom.AnforaXP;
 import gc.grivyzom.AnforaXP.commands.AnforaCommands;
 import gc.grivyzom.AnforaXP.data.*;
 import gc.grivyzom.AnforaXP.listeners.*;
+import gc.grivyzom.AnforaXP.tasks.AutoSaveTask;
 import gc.grivyzom.AnforaXP.utils.GuiManager;
 import gc.grivyzom.AnforaXP.utils.MessageManager;
+import gc.grivyzom.AnforaXP.utils.ParticleAnimations;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -18,6 +20,7 @@ public class AnforaMain extends JavaPlugin {
     private GuiManager guiManager;
     private GuiListener guiListener;
     private AnforaUUIDManager anforaUUIDManager;
+    private AutoSaveTask autoSaveTask;
 
     @Override
     public void onEnable() {
@@ -54,6 +57,10 @@ public class AnforaMain extends JavaPlugin {
         getCommand("anfora").setExecutor(commandExecutor);
         getCommand("anfora").setTabCompleter(commandExecutor);
         registerListeners();
+        
+        // 6. Iniciar sistema de auto-guardado
+        this.autoSaveTask = new AutoSaveTask(this, playerDataManager, anforaDataManager);
+        this.autoSaveTask.start();
 
         getLogger().info("El complemento de Ánfora ha habilitado exitosamente");
     }
@@ -73,6 +80,34 @@ public class AnforaMain extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // 1. Detener auto-guardado
+        if (autoSaveTask != null) {
+            autoSaveTask.stop();
+        }
+        
+        // 2. CRÍTICO: Cancelar todas las animaciones de partículas activas
+        // Previene fuga de memoria con tasks huérfanas
+        ParticleAnimations.cancelAllAnimations();
+        getLogger().info("Animaciones canceladas: " + ParticleAnimations.getActiveAnimationCount());
+        
+        // 3. Guardar todos los datos en cache antes de cerrar (guardado final)
+        getLogger().info("Realizando guardado final...");
+        
+        if (playerDataManager != null) {
+            playerDataManager.saveAll();
+            getLogger().info("✓ Jugadores guardados: " + playerDataManager.getCacheSize());
+        }
+        
+        if (anforaDataManager != null) {
+            anforaDataManager.saveAll();
+            getLogger().info("✓ Ánforas guardadas: " + anforaDataManager.getCacheSize());
+        }
+        
+        // 4. Cerrar la conexión del pool de base de datos (HikariCP para MySQL)
+        if (dataStorageProvider != null && dataStorageProvider.getActiveStorage() != null) {
+            dataStorageProvider.getActiveStorage().close();
+        }
+        
         getLogger().info("El complemento de Ánfora ha deshabilitado exitosamente");
     }
 
