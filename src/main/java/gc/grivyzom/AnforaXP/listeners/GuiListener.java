@@ -129,9 +129,14 @@ public class GuiListener implements Listener {
         int upgradeCost = levelInfo.getUpgradeCost();
 
         if (anforaData.getExperience() >= upgradeCost) {
+            // Actualizar datos en memoria (operación rápida)
             anforaData.setExperience(anforaData.getExperience() - upgradeCost);
             anforaData.setLevel(currentLevel + 1);
-            anforaDataManager.saveAnfora(anforaData);
+            
+            // Guardar en DB de forma asíncrona (no bloquea el main thread)
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                anforaDataManager.saveAnfora(anforaData);
+            });
 
             player.sendMessage("§a¡Has mejorado el ánfora al nivel " + (currentLevel + 1) + "!");
             player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.2f);
@@ -237,9 +242,14 @@ public class GuiListener implements Listener {
             return;
         }
 
+        // Actualizar datos en memoria (operación rápida)
         anforaData.addExperience(actualAmountToDeposit);
         ExperienceManager.setTotalExperience(player, playerCurrentExp - actualAmountToDeposit);
-        anforaDataManager.saveAnfora(anforaData);
+        
+        // Guardar en DB de forma asíncrona (no bloquea el main thread)
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            anforaDataManager.saveAnfora(anforaData);
+        });
 
         // Reproducir animación de partículas al depositar
         Location anforaLocation = getAnforaLocationFromId(anforaId);
@@ -256,9 +266,14 @@ public class GuiListener implements Listener {
         int expToWithdraw = playerTargetExp - playerCurrentExp;
 
         if (anforaData.getExperience() >= expToWithdraw) {
+            // Actualizar datos en memoria (operación rápida)
             anforaData.setExperience(anforaData.getExperience() - expToWithdraw);
             ExperienceManager.setTotalExperience(player, playerCurrentExp + expToWithdraw);
-            anforaDataManager.saveAnfora(anforaData);
+            
+            // Guardar en DB de forma asíncrona (no bloquea el main thread)
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                anforaDataManager.saveAnfora(anforaData);
+            });
             
             // Reproducir animación de partículas al retirar
             Location anforaLocation = getAnforaLocationFromId(anforaId);
