@@ -8,6 +8,8 @@ Anfora Resonante es un plugin de Spigot que introduce un nuevo bloque personaliz
 -   **Ítem Personalizado y Configurable:** El "Anfora Resonante" es un ítem único cuya apariencia (nombre, descripción y efecto de brillo) es totalmente personalizable por los administradores a través de `config.yml`.
 -   **Persistencia de Datos en el Ítem:** Cuando un ánfora se rompe, el ítem resultante **conserva el nivel, la experiencia y el nombre del propietario** que contenía, permitiendo a los jugadores mover sus bancos de XP sin perder datos.
 -   **Sistema de Propietarios:** Cada ánfora colocada pertenece a un jugador. **Solo el propietario puede romper y recuperar su ánfora**. Cualquier intento de romper un ánfora ajena es cancelado, protegiendo la experiencia de los jugadores.
+-   **Protección contra Explosiones:** Las ánforas no son destruidas por explosiones (ej. Creepers, TNT). En su lugar, se sueltan como un ítem, conservando toda su experiencia y datos.
+-   **Sistema Anti-Duplicación:** Incluye un sistema de seguimiento de UUIDs para prevenir la duplicación de ánforas, garantizando que cada ánfora sea única en el servidor.
 -   **Interacción con Ánforas:**
     -   **Shift + Clic Derecho:** Permite al propietario **extraer toda la experiencia** almacenada en el ánfora y transferirla a su barra de experiencia.
     -   **Clic Derecho (sin Shift):** Abre una interfaz gráfica (GUI) que permite gestionar la experiencia del ánfora, mejorarla y ver su información.
@@ -82,8 +84,4 @@ anfora-item:
 -   **Arquitectura:** El plugin utiliza el patrón de diseño **Strategy** para cambiar fácilmente entre los diferentes motores de almacenamiento (`StorageEngine`).
 -   **Identificación de Ítems:** Los ítems personalizados se identifican mediante `PersistentDataContainer` (PDC). La clave principal es `anfora_resonante: "true"`.
 -   **Unicidad de Ítems:** Cada ánfora tiene un `UUID` único (`anfora_unique_id`) que persiste a través de su ciclo de vida (ítem -> bloque -> ítem) para prevenir la duplicación. El nivel, la experiencia y el nombre del propietario también se guardan en el PDC del ítem (`anfora_level`, `anfora_experience`, `anfora_owner_name`).
-
-### Próximos Pasos Críticos
-1.  **Implementar la lógica de los Listeners restantes** (`AnforaExplosionListener`, etc.) para definir cómo se añade/retira XP en otras situaciones.
-2.  **Implementar un sistema de rastreo de `UUID`s** para validar la unicidad de las ánforas en tiempo real y prevenir duplicaciones avanzadas.
-3.  **Sincronizar Versiones** entre `pom.xml` y `plugin.yml`.
+-   **Gestor de UUIDs (`AnforaUUIDManager`):** Se ha implementado un gestor central que mantiene un registro de todas las ánforas colocadas en el mundo. Este sistema previene la colocación de ánforas duplicadas al verificar el `UUID` único de cada ítem contra un caché cargado al iniciar el servidor.

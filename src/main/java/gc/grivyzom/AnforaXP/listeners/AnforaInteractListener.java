@@ -34,18 +34,18 @@ public class AnforaInteractListener implements Listener {
         Player player = event.getPlayer();
         Block clickedBlock = event.getClickedBlock();
 
-        // Verificar si es un clic derecho en un bloque
+        // Check for right-click on a block
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK || clickedBlock == null) {
             return;
         }
 
-        // Verificar si el bloque es una ánfora
+        // Check if the block is an amphora
         if (clickedBlock.getType() == Material.DECORATED_POT) {
             String anforaId = String.format("%s_%d_%d_%d", clickedBlock.getWorld().getName(), clickedBlock.getX(), clickedBlock.getY(), clickedBlock.getZ());
             AnforaData anforaData = anforaDataManager.loadAnfora(anforaId);
 
             if (anforaData != null) {
-                // Verificar si el jugador es el propietario
+                // Check for ownership
                 if (!player.getUniqueId().equals(anforaData.getOwnerUUID())) {
                     Map<String, String> placeholders = new HashMap<>();
                     placeholders.put("owner", anforaData.getOwnerName());
@@ -54,12 +54,30 @@ public class AnforaInteractListener implements Listener {
                     return;
                 }
 
-                // Registrar que este jugador está abriendo esta ánfora
-                guiListener.addPlayer(player.getUniqueId(), anforaId);
-
-                // Abrir la GUI del ánfora
+                // Cancel the event to handle the action manually
                 event.setCancelled(true);
-                plugin.getGuiManager().openAnforaGui(player, anforaData);
+
+                if (player.isSneaking()) {
+                    // --- SHIFT-CLICK LOGIC: Withdraw all experience ---
+                    double experienceToWithdraw = anforaData.getExperience();
+                    if (experienceToWithdraw <= 0) {
+                        player.sendMessage(messageManager.getMessage("anfora_empty"));
+                        return;
+                    }
+
+                    // Transfer experience
+                    player.giveExp((int) Math.round(experienceToWithdraw));
+                    anforaData.setExperience(0);
+                    anforaDataManager.saveAnfora(anforaData);
+
+                    Map<String, String> placeholders = new HashMap<>();
+                    placeholders.put("exp_amount", String.format("%.0f", experienceToWithdraw));
+                    player.sendMessage(messageManager.getMessage("exp_withdrawn_all", placeholders));
+                } else {
+                    // --- NORMAL CLICK LOGIC: Open GUI ---
+                    guiListener.addPlayer(player.getUniqueId(), anforaId);
+                    plugin.getGuiManager().openAnforaGui(player, anforaData);
+                }
             }
         }
     }

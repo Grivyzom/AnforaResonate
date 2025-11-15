@@ -61,7 +61,6 @@ public class AnforaMain extends JavaPlugin {
         pm.registerEvents(new AnforaPlaceListener(this), this);
         pm.registerEvents(new AnforaBreakListener(this), this);
         pm.registerEvents(new AnforaInteractListener(this),this);
-        pm.registerEvents(new AnforaShiftActionListener(this),this);
         pm.registerEvents(new AnforaExplosionListener(this), this);
         pm.registerEvents(new PlayerConnectionListener(this), this);
 
