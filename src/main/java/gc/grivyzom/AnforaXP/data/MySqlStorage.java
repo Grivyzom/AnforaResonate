@@ -7,7 +7,9 @@ import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.sql.*;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -193,5 +195,41 @@ public class MySqlStorage implements StorageEngine {
             plugin.getLogger().log(Level.SEVERE, "No se pudo cargar los UUIDs de las ánforas desde la base de datos MySQL.", e);
         }
         return uuids;
+    }
+
+    @Override
+    public Set<String> getAllAnforaIds() {
+        Set<String> ids = new HashSet<>();
+        String sql = "SELECT id FROM anforas;";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                ids.add(rs.getString("id"));
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "No se pudo cargar los IDs de las ánforas desde la base de datos MySQL.", e);
+        }
+        return ids;
+    }
+
+    @Override
+    public Map<String, String> getUniqueIdToAnforaIdMap() {
+        Map<String, String> map = new HashMap<>();
+        String sql = "SELECT uniqueId, id FROM anforas;";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                String uniqueId = rs.getString("uniqueId");
+                String id = rs.getString("id");
+                map.put(uniqueId, id);
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "No se pudo cargar el mapeo uniqueId -> anforaId desde la base de datos MySQL.", e);
+        }
+        return map;
     }
 }
