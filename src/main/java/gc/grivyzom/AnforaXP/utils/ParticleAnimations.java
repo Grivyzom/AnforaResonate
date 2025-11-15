@@ -1,12 +1,18 @@
 package gc.grivyzom.AnforaXP.utils;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.plugin.Plugin;
 
 public class ParticleAnimations {
+
+    private static final Map<Location, BukkitTask> activeTasks = new ConcurrentHashMap<>();
 
     /**
      * Crea una animación de partículas girando alrededor de la parte inferior del ánfora
@@ -14,15 +20,20 @@ public class ParticleAnimations {
      * @param location Ubicación del bloque del ánfora
      */
     public static void playAnforaPlaceAnimation(Plugin plugin, Location location) {
-        if (location == null) return;
+        if (location == null || plugin == null) return;
         
         World world = location.getWorld();
         if (world == null) return;
 
+        // Cancelar cualquier animación previa en esta ubicación
+        cancelAnimation(location);
+
         // Centro del bloque, ajustado a la parte inferior
         final Location center = location.clone().add(0.5, 0.2, 0.5);
+        // Crear clave normalizada para el mapa
+        final Location key = normalizeLocation(location);
 
-        new BukkitRunnable() {
+        BukkitTask task = new BukkitRunnable() {
             int ticks = 0;
             final int duration = 60; // 3 segundos (60 ticks)
             final double radius = 0.5;
@@ -31,6 +42,14 @@ public class ParticleAnimations {
             public void run() {
                 if (ticks >= duration) {
                     this.cancel();
+                    activeTasks.remove(key);
+                    return;
+                }
+
+                // Verificar que el mundo sigue cargado
+                if (world.getPlayers().isEmpty() && ticks > 20) {
+                    this.cancel();
+                    activeTasks.remove(key);
                     return;
                 }
 
@@ -73,6 +92,9 @@ public class ParticleAnimations {
                 ticks++;
             }
         }.runTaskTimer(plugin, 0L, 1L);
+
+        // Guardar la referencia del task
+        activeTasks.put(key, task);
     }
 
     /**
@@ -82,7 +104,7 @@ public class ParticleAnimations {
      * @param anforaLocation Ubicación del ánfora
      */
     public static void playDepositAnimation(Plugin plugin, Location playerLocation, Location anforaLocation) {
-        if (playerLocation == null || anforaLocation == null) return;
+        if (playerLocation == null || anforaLocation == null || plugin == null) return;
         
         World world = playerLocation.getWorld();
         if (world == null) return;
@@ -91,8 +113,13 @@ public class ParticleAnimations {
         final Location start = playerLocation.clone().add(0, 1.2, 0);
         // Centro del ánfora (parte superior)
         final Location end = anforaLocation.clone().add(0.5, 0.5, 0.5);
+        // Clave única para esta animación (usar ubicación del jugador)
+        final Location key = normalizeLocation(playerLocation);
 
-        new BukkitRunnable() {
+        // Cancelar animación previa del mismo jugador si existe
+        cancelAnimation(key);
+
+        BukkitTask task = new BukkitRunnable() {
             int ticks = 0;
             final int duration = 20; // 1 segundo
 
@@ -100,6 +127,14 @@ public class ParticleAnimations {
             public void run() {
                 if (ticks >= duration) {
                     this.cancel();
+                    activeTasks.remove(key);
+                    return;
+                }
+
+                // Verificar que el mundo sigue cargado
+                if (world.getPlayers().isEmpty()) {
+                    this.cancel();
+                    activeTasks.remove(key);
                     return;
                 }
 
@@ -122,6 +157,9 @@ public class ParticleAnimations {
                 ticks++;
             }
         }.runTaskTimer(plugin, 0L, 1L);
+
+        // Guardar la referencia del task
+        activeTasks.put(key, task);
     }
 
     /**
@@ -131,7 +169,7 @@ public class ParticleAnimations {
      * @param playerLocation Ubicación del jugador
      */
     public static void playWithdrawAnimation(Plugin plugin, Location anforaLocation, Location playerLocation) {
-        if (playerLocation == null || anforaLocation == null) return;
+        if (playerLocation == null || anforaLocation == null || plugin == null) return;
         
         World world = playerLocation.getWorld();
         if (world == null) return;
@@ -140,8 +178,13 @@ public class ParticleAnimations {
         final Location start = anforaLocation.clone().add(0.5, 0.5, 0.5);
         // Centro del jugador (a la altura del pecho)
         final Location end = playerLocation.clone().add(0, 1.2, 0);
+        // Clave única para esta animación (usar ubicación del jugador)
+        final Location key = normalizeLocation(playerLocation);
 
-        new BukkitRunnable() {
+        // Cancelar animación previa del mismo jugador si existe
+        cancelAnimation(key);
+
+        BukkitTask task = new BukkitRunnable() {
             int ticks = 0;
             final int duration = 20; // 1 segundo
 
@@ -149,6 +192,14 @@ public class ParticleAnimations {
             public void run() {
                 if (ticks >= duration) {
                     this.cancel();
+                    activeTasks.remove(key);
+                    return;
+                }
+
+                // Verificar que el mundo sigue cargado
+                if (world.getPlayers().isEmpty()) {
+                    this.cancel();
+                    activeTasks.remove(key);
                     return;
                 }
 
@@ -171,5 +222,61 @@ public class ParticleAnimations {
                 ticks++;
             }
         }.runTaskTimer(plugin, 0L, 1L);
+
+        // Guardar la referencia del task
+        activeTasks.put(key, task);
+    }
+
+    /**
+     * Cancela la animación de partículas en una ubicación específica
+     * @param location Ubicación donde cancelar la animación
+     */
+    public static void cancelAnimation(Location location) {
+        if (location == null) return;
+        
+        Location key = normalizeLocation(location);
+        BukkitTask task = activeTasks.remove(key);
+        
+        if (task != null && !task.isCancelled()) {
+            task.cancel();
+        }
+    }
+
+    /**
+     * Cancela TODAS las animaciones activas
+     * CRÍTICO: Llamar esto en onDisable() para prevenir fugas de memoria
+     */
+    public static void cancelAllAnimations() {
+        for (BukkitTask task : activeTasks.values()) {
+            if (task != null && !task.isCancelled()) {
+                task.cancel();
+            }
+        }
+        activeTasks.clear();
+    }
+
+    /**
+     * Obtiene la cantidad de animaciones activas
+     * @return Número de animaciones en ejecución
+     */
+    public static int getActiveAnimationCount() {
+        return activeTasks.size();
+    }
+
+    /**
+     * Normaliza una ubicación para usarla como clave en el mapa
+     * Redondea las coordenadas a enteros para evitar problemas de precisión
+     * @param location Ubicación a normalizar
+     * @return Ubicación normalizada
+     */
+    private static Location normalizeLocation(Location location) {
+        if (location == null) return null;
+        
+        return new Location(
+            location.getWorld(),
+            location.getBlockX(),
+            location.getBlockY(),
+            location.getBlockZ()
+        );
     }
 }
