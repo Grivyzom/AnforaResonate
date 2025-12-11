@@ -24,9 +24,22 @@ invalid_number: "&c'{number}' no es un número válido."
 unknown_command: "&cComando desconocido. Usa /anfora help para ver los comandos."
 
 # Comandos
-give_usage: "&cUso: /anfora give <jugador> [cantidad]"
-give_success: "&aHas dado {amount} Anfora(s) Resonante(s) a {player}."
-receive_success: "&6¡Has recibido {amount} Anfora(s) Resonante(s)!"
+give_usage: "&cUso: /anfora give <jugador> [cantidad] [nivel]"
+give_success: "&aHas dado {amount} Anfora(s) Resonante(s) de nivel {level} a {player}."
+receive_success: "&6¡Has recibido {amount} Anfora(s) Resonante(s) de nivel {level}!"
+
+reload_usage: "&cUso: /anfora reload"
+reload_success: "&aLa configuración de Anfora Resonante ha sido recargada."
+
+must_be_player: "&cEste comando solo puede ser usado por un jugador."
+not_anfora_in_hand: "&cDebes tener un ánfora resonante en tu mano principal."
+anfora_data_corrupted: "&cError: Los datos del ánfora están corruptos. Contacta a un administrador."
+invalid_uuid: "&cEl UUID proporcionado no es válido."
+
+anfora_guide:
+  - "&6Guía Rápida de Anfora Resonante:"
+  - "&eColoca tu primera ánfora para empezar a almacenar experiencia."
+  - "&eUsa /anfora list para ver tus ánforas colocadas."
 
 help_header: "&6--- Ayuda de Anfora Resonante ---"
 help_line: "&e{command} &7- &f{description}"
@@ -58,6 +71,23 @@ gui_coming_soon: "&7(Futuro) Aquí se abrirá la GUI del ánfora."
 # Errores
 invalid_item: "&cError: El ítem de ánfora no tiene un ID único válido. Contacta a un administrador."
 anfora_dupe_error: "&cError: Se ha detectado un ánfora duplicada o inválida. Colocación cancelada."
+anfora_limit_reached: "&cHas alcanzado el límite máximo de ánforas ({max_anforas}). No puedes colocar más."
 
 # Otros
 account_activated: "&a¡Tu cuenta de Anfora Resonante ha sido activada!"
+
+# Admin commands
+setlevel_usage: "&cUso: /anfora setlevel <nivel> [uuid]"
+setlevel_success: "&aHas establecido el nivel del ánfora con UUID {uuid} a {level}."
+setxp_usage: "&cUso: /anfora setxp <xp> [uuid]"
+setxp_success: "&aHas establecido la experiencia del ánfora con UUID {uuid} a {xp} (Nivel ajustado a {level})."
+anfora_not_found: "&cAnfora no encontrada con el UUID proporcionado o en tu mano."
+invalid_level: "&cEl nivel debe ser un número entre 1 y {max_level}."
+invalid_xp: "&cLa XP debe ser un número entre 0 y {max_capacity}."
+
+# Mesa de administración
+admin_table_placed: "&a¡Mesa de Administración colocada!"
+admin_table_picked_up: "&eHas recogido tu Mesa de Administración."
+admin_table_not_owner_interact: "&cNo puedes usar la Mesa de Administración de {owner}."
+admin_table_not_owner_break: "&cNo puedes romper la Mesa de Administración de otro jugador."
+teleport_to_anfora: "&a¡Te has teletransportado a tu ánfora!"
