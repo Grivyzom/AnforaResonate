@@ -2,13 +2,13 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-AnforaXP.jar/
+
+### Compiled JAR ###
+*.jar
+!**/src/main/**/libs/*.jar
 
 ### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -38,3 +38,27 @@ build/
 ### Mac OS ###
 .DS_Store
 
+### Windows ###
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+### Logs ###
+*.log
+logs/
+
+### Minecraft Plugin Dev ###
+run/
+server/
+plugins/
+world/
+world_nether/
+world_the_end/
+*.db
+*.sqlite
+
+### Database files (generated at runtime) ###
+database.db
+transactions.yml
+players.yml
+anforas.yml
