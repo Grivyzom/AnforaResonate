@@ -24,6 +24,9 @@ public class ItemFactory {
     public static NamespacedKey ANFORA_LEVEL_KEY;
     public static NamespacedKey ANFORA_EXP_KEY;
     public static NamespacedKey ANFORA_OWNER_NAME_KEY; // Nueva clave
+    public static NamespacedKey ADMIN_TABLE_KEY; // Key for Admin Table
+    public static NamespacedKey ADMIN_TABLE_OWNER_KEY; // Key for Admin Table Owner UUID
+    public static NamespacedKey ADMIN_TABLE_OWNER_NAME_KEY; // Key for Admin Table Owner Name
 
     public static void initKeys(AnforaMain plugin) {
         ANFORA_RESONANTE_KEY = new NamespacedKey(plugin, "anfora_resonante");
@@ -31,16 +34,80 @@ public class ItemFactory {
         ANFORA_LEVEL_KEY = new NamespacedKey(plugin, "anfora_level");
         ANFORA_EXP_KEY = new NamespacedKey(plugin, "anfora_experience");
         ANFORA_OWNER_NAME_KEY = new NamespacedKey(plugin, "anfora_owner_name"); // Inicializar clave
+        ADMIN_TABLE_KEY = new NamespacedKey(plugin, "admin_table");
+        ADMIN_TABLE_OWNER_KEY = new NamespacedKey(plugin, "admin_table_owner");
+        ADMIN_TABLE_OWNER_NAME_KEY = new NamespacedKey(plugin, "admin_table_owner_name");
+    }
+
+    public static ItemStack createAdminTableItem(AnforaMain plugin) {
+        return createAdminTableItem(plugin, null, null);
+    }
+
+    public static ItemStack createAdminTableItem(AnforaMain plugin, UUID ownerUUID, String ownerName) {
+        ItemStack item = new ItemStack(Material.LECTERN);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&d&lMesa de Administración"));
+            List<String> lore = new ArrayList<>();
+            if (ownerName != null && !ownerName.isEmpty()) {
+                lore.add(ChatColor.translateAlternateColorCodes('&', "&7Propietario: &e" + ownerName));
+            }
+            lore.add(ChatColor.GRAY + "Coloca este atril para acceder");
+            lore.add(ChatColor.GRAY + "al Banco Central de Ánforas.");
+            meta.setLore(lore);
+
+            PersistentDataContainer container = meta.getPersistentDataContainer();
+            container.set(ADMIN_TABLE_KEY, PersistentDataType.STRING, "true");
+            if (ownerUUID != null) {
+                container.set(ADMIN_TABLE_OWNER_KEY, PersistentDataType.STRING, ownerUUID.toString());
+            }
+            if (ownerName != null) {
+                container.set(ADMIN_TABLE_OWNER_NAME_KEY, PersistentDataType.STRING, ownerName);
+            }
+
+            meta.addEnchant(Enchantment.FORTUNE, 1, true);
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public static boolean isAdminTable(ItemStack item) {
+        if (item == null || !item.hasItemMeta())
+            return false;
+        return item.getItemMeta().getPersistentDataContainer().has(ADMIN_TABLE_KEY, PersistentDataType.STRING);
+    }
+
+    public static UUID getAdminTableOwnerUUID(ItemStack item) {
+        if (!isAdminTable(item))
+            return null;
+        try {
+            String uuidStr = item.getItemMeta().getPersistentDataContainer().get(ADMIN_TABLE_OWNER_KEY,
+                    PersistentDataType.STRING);
+            return uuidStr != null ? UUID.fromString(uuidStr) : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static String getAdminTableOwnerName(ItemStack item) {
+        if (!isAdminTable(item))
+            return null;
+        return item.getItemMeta().getPersistentDataContainer().get(ADMIN_TABLE_OWNER_NAME_KEY,
+                PersistentDataType.STRING);
     }
 
     public static ItemStack createAnforaItem(AnforaMain plugin, int amount) {
         return createAnforaItem(plugin, amount, null, 1, 0, null);
     }
 
-    public static ItemStack createAnforaItem(AnforaMain plugin, int amount, UUID existingUniqueId, int level, double experience, String ownerName) {
+    public static ItemStack createAnforaItem(AnforaMain plugin, int amount, UUID existingUniqueId, int level,
+            int experience, String ownerName) {
         FileConfiguration config = plugin.getConfig();
 
-        String name = ChatColor.translateAlternateColorCodes('&', config.getString("anfora-item.name", "&6Anfora Resonante"));
+        String name = ChatColor.translateAlternateColorCodes('&',
+                config.getString("anfora-item.name", "&6Anfora Resonante"));
         List<String> loreTemplate = config.getStringList("anfora-item.lore");
 
         List<String> finalLore = new ArrayList<>();
@@ -48,7 +115,7 @@ public class ItemFactory {
             finalLore.add(ChatColor.translateAlternateColorCodes('&', "&7Propietario: &e" + ownerName));
         }
         finalLore.add(ChatColor.translateAlternateColorCodes('&', "&7Nivel: &e" + level));
-        finalLore.add(ChatColor.translateAlternateColorCodes('&', "&7Experiencia: &a" + String.format("%.0f", experience)));
+        finalLore.add(ChatColor.translateAlternateColorCodes('&', "&7Experiencia: &a" + experience));
         finalLore.add(""); // Línea en blanco
         for (String line : loreTemplate) {
             finalLore.add(ChatColor.translateAlternateColorCodes('&', line));
@@ -72,7 +139,8 @@ public class ItemFactory {
                     meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                 }
             } else {
-                plugin.getLogger().log(Level.WARNING, "El encantamiento '" + enchantTypeString + "' configurado para la Anfora Resonante no es válido.");
+                plugin.getLogger().log(Level.WARNING, "El encantamiento '" + enchantTypeString
+                        + "' configurado para la Anfora Resonante no es válido.");
             }
 
             PersistentDataContainer container = meta.getPersistentDataContainer();
@@ -81,7 +149,7 @@ public class ItemFactory {
             UUID finalUniqueId = (existingUniqueId != null) ? existingUniqueId : UUID.randomUUID();
             container.set(ANFORA_UNIQUE_ID_KEY, PersistentDataType.STRING, finalUniqueId.toString());
             container.set(ANFORA_LEVEL_KEY, PersistentDataType.INTEGER, level);
-            container.set(ANFORA_EXP_KEY, PersistentDataType.DOUBLE, experience);
+            container.set(ANFORA_EXP_KEY, PersistentDataType.INTEGER, experience);
             if (ownerName != null) {
                 container.set(ANFORA_OWNER_NAME_KEY, PersistentDataType.STRING, ownerName);
             }
@@ -97,26 +165,33 @@ public class ItemFactory {
     }
 
     public static UUID getAnforaUniqueId(ItemStack item) {
-        if (!isAnforaResonante(item)) return null;
+        if (!isAnforaResonante(item))
+            return null;
         try {
-            return UUID.fromString(item.getItemMeta().getPersistentDataContainer().get(ANFORA_UNIQUE_ID_KEY, PersistentDataType.STRING));
+            return UUID.fromString(item.getItemMeta().getPersistentDataContainer().get(ANFORA_UNIQUE_ID_KEY,
+                    PersistentDataType.STRING));
         } catch (Exception e) {
             return null;
         }
     }
 
     public static int getAnforaLevel(ItemStack item) {
-        if (!isAnforaResonante(item)) return 1;
-        return item.getItemMeta().getPersistentDataContainer().getOrDefault(ANFORA_LEVEL_KEY, PersistentDataType.INTEGER, 1);
+        if (!isAnforaResonante(item))
+            return 1;
+        return item.getItemMeta().getPersistentDataContainer().getOrDefault(ANFORA_LEVEL_KEY,
+                PersistentDataType.INTEGER, 1);
     }
 
-    public static double getAnforaExperience(ItemStack item) {
-        if (!isAnforaResonante(item)) return 0.0;
-        return item.getItemMeta().getPersistentDataContainer().getOrDefault(ANFORA_EXP_KEY, PersistentDataType.DOUBLE, 0.0);
+    public static int getAnforaExperience(ItemStack item) {
+        if (!isAnforaResonante(item))
+            return 0;
+        return item.getItemMeta().getPersistentDataContainer().getOrDefault(ANFORA_EXP_KEY, PersistentDataType.INTEGER,
+                0);
     }
 
     public static String getAnforaOwnerName(ItemStack item) {
-        if (!isAnforaResonante(item)) return null;
+        if (!isAnforaResonante(item))
+            return null;
         return item.getItemMeta().getPersistentDataContainer().get(ANFORA_OWNER_NAME_KEY, PersistentDataType.STRING);
     }
 
