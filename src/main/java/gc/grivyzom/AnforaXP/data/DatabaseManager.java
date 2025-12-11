@@ -15,7 +15,7 @@ public class DatabaseManager {
 
     public enum DatabaseType {
         YAML,
-        MYSQL,
+        MARIADB,
         SQLITE
     }
 
@@ -34,9 +34,9 @@ public class DatabaseManager {
         String selected = plugin.getConfig().getString("database-type", "yaml").toLowerCase();
 
         switch (selected) {
-            case "mysql":
-                databaseType = DatabaseType.MYSQL;
-                plugin.getLogger().info("Motor seleccionado: MySQL");
+            case "mariadb":
+                databaseType = DatabaseType.MARIADB;
+                plugin.getLogger().info("Motor seleccionado: MariaDB");
                 break;
             case "sqlite":
                 databaseType = DatabaseType.SQLITE;

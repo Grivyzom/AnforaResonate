@@ -3,9 +3,9 @@ package gc.grivyzom.AnforaXP.listeners;
 import gc.grivyzom.AnforaXP.AnforaMain;
 import gc.grivyzom.AnforaXP.data.AnforaData;
 import gc.grivyzom.AnforaXP.data.AnforaDataManager;
+import gc.grivyzom.AnforaXP.utils.EffectsManager;
 import gc.grivyzom.AnforaXP.utils.ExperienceManager;
 import gc.grivyzom.AnforaXP.utils.LevelManager;
-import gc.grivyzom.AnforaXP.utils.ParticleAnimations;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -14,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -96,16 +97,18 @@ public class GuiListener implements Listener {
                 isAction = true;
                 break;
 
-            // Upgrade
             case 4:
-                handleUpgrade(player, anforaData);
-                isAction = true; // Sound will be handled inside handleUpgrade
+                if (LevelManager.levelUp(anforaData)) {
+                    player.sendMessage("§a¡Ánfora mejorada al nivel " + anforaData.getLevel() + "!");
+                    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                        anforaDataManager.saveAnfora(anforaData);
+                    });
+                    isAction = true;
+                }
                 break;
 
-            // Information (Ender Pearl or Book)
             case 13:
             case 22:
-                // The information is already displayed on the item, so we don't need to do anything here.
                 break;
         }
 
@@ -113,37 +116,7 @@ public class GuiListener implements Listener {
             player.playSound(player.getLocation(), org.bukkit.Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
         }
 
-        // Update the GUI after an action
         updateGui(player, anforaData);
-    }
-
-    private void handleUpgrade(Player player, AnforaData anforaData) {
-        int currentLevel = anforaData.getLevel();
-        if (currentLevel >= LevelManager.getMaxLevel()) {
-            player.sendMessage("§cEl ánfora ya ha alcanzado el nivel máximo.");
-            player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f);
-            return;
-        }
-
-        LevelManager.LevelInfo levelInfo = LevelManager.getLevelInfo(currentLevel);
-        int upgradeCost = levelInfo.getUpgradeCost();
-
-        if (anforaData.getExperience() >= upgradeCost) {
-            // Actualizar datos en memoria (operación rápida)
-            anforaData.setExperience(anforaData.getExperience() - upgradeCost);
-            anforaData.setLevel(currentLevel + 1);
-            
-            // Guardar en DB de forma asíncrona (no bloquea el main thread)
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                anforaDataManager.saveAnfora(anforaData);
-            });
-
-            player.sendMessage("§a¡Has mejorado el ánfora al nivel " + (currentLevel + 1) + "!");
-            player.playSound(player.getLocation(), org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.2f);
-        } else {
-            player.sendMessage("§cNo tienes suficiente experiencia en el ánfora para mejorarla. Necesitas " + upgradeCost + " XP.");
-            player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.8f);
-        }
     }
 
     private void updateGui(Player player, AnforaData anforaData) {
@@ -153,38 +126,58 @@ public class GuiListener implements Listener {
         }
         Inventory openInventory = openInventoryView.getTopInventory();
 
-        // Update Ender Pearl (Capacity)
-        LevelManager.LevelInfo levelInfo = LevelManager.getLevelInfo(anforaData.getLevel());
-        int maxExperience = levelInfo.getMaxExperience();
-        double currentExperience = anforaData.getExperience();
-        double percentage = (maxExperience > 0) ? (currentExperience / maxExperience) * 100 : 0;
+        int currentLevel = anforaData.getLevel();
+        int currentXp = anforaData.getExperience();
 
-        openInventory.setItem(13, plugin.getGuiManager().createGuiItem(org.bukkit.Material.ENDER_PEARL, "§eCapacidad",
-                "§7Experiencia: §a" + String.format("%.0f", currentExperience) + " / " + maxExperience,
-                "§7Nivel: §e" + anforaData.getLevel(),
-                "§7" + buildProgressBar(percentage)
-        ));
+        int xpForCurrentLevel = LevelManager.getXpForLevel(currentLevel);
+        int xpForNextLevel = LevelManager.getXpCapacityForLevel(currentLevel);
 
-        // Update Nether Star (Upgrade)
-        int nextLevel = anforaData.getLevel() + 1;
-        if (anforaData.getLevel() < LevelManager.getMaxLevel()) {
-            LevelManager.LevelInfo nextLevelInfo = LevelManager.getLevelInfo(anforaData.getLevel());
-            openInventory.setItem(4, plugin.getGuiManager().createGuiItem(org.bukkit.Material.NETHER_STAR, "§bMejorar a Nivel " + nextLevel,
-                    "§7Costo: §c" + nextLevelInfo.getUpgradeCost() + " XP"));
+        double progressPercentage = 0;
+        String progressLore;
+        
+        if (currentLevel >= LevelManager.getMaxLevel()) {
+            progressPercentage = 100;
+            progressLore = "§a¡NIVEL MÁXIMO ALCANZADO!";
         } else {
-            openInventory.setItem(4, plugin.getGuiManager().createGuiItem(org.bukkit.Material.NETHER_STAR, "§bNivel Máximo Alcanzado", "§a¡Felicidades!"));
+            int xpInThisLevel = currentXp - xpForCurrentLevel;
+            int xpNeededForThisLevel = xpForNextLevel - xpForCurrentLevel;
+            if (xpNeededForThisLevel > 0) {
+                progressPercentage = ((double) xpInThisLevel / xpNeededForThisLevel) * 100;
+            }
+            progressLore = "§7" + xpInThisLevel + " / " + xpNeededForThisLevel;
         }
 
-        // Update Book (Info)
-        openInventory.setItem(22, plugin.getGuiManager().createGuiItem(org.bukkit.Material.BOOK, "§dInformación",
+        // Slot 13: Experience Bottle with Progress and User XP
+        int playerTotalXp = ExperienceManager.getTotalExperience(player);
+        ItemStack progressItem = plugin.getGuiManager().createGuiItem(org.bukkit.Material.EXPERIENCE_BOTTLE, "§eProgreso de Experiencia",
+                progressLore,
+                "§7" + buildProgressBar(progressPercentage),
+                "",
+                "§7Tu Experiencia: §a" + playerTotalXp
+        );
+        openInventory.setItem(13, progressItem);
+
+        // Slot 4: Nether Star (Upgrade Button or Info)
+        ItemStack levelItem;
+        if (LevelManager.canLevelUp(anforaData)) {
+            levelItem = plugin.getGuiManager().createGuiItem(org.bukkit.Material.NETHER_STAR, "§a¡Mejorar Ánfora!",
+                    "§7Haz click para mejorar el ánfora",
+                    "§7al nivel " + (currentLevel + 1)
+            );
+        } else {
+            levelItem = plugin.getGuiManager().createGuiItem(org.bukkit.Material.NETHER_STAR, "§bNivel del Ánfora", "§eNivel " + currentLevel);
+        }
+        openInventory.setItem(4, levelItem);
+
+        openInventory.setItem(22, plugin.getGuiManager().createGuiItem(org.bukkit.Material.BOOK, "§dInformación General",
                 "§7Dueño: §e" + anforaData.getOwnerName(),
-                "§7Nivel: §e" + anforaData.getLevel(),
-                "§7Capacidad: §a" + maxExperience));
+                "§7Nivel: §e" + currentLevel,
+                "§7XP Total: §a" + currentXp));
     }
 
     private String buildProgressBar(double percentage) {
         StringBuilder bar = new StringBuilder("§8[");
-        int progress = (int) (percentage / 10); // 10 bars total
+        int progress = (int) (percentage / 10);
         for (int i = 0; i < 10; i++) {
             if (i < progress) {
                 bar.append("§a=");
@@ -196,11 +189,6 @@ public class GuiListener implements Listener {
         return bar.toString();
     }
 
-    /**
-     * Obtiene la ubicación del ánfora desde el anforaId
-     * @param anforaId ID del ánfora en formato "world_x_y_z"
-     * @return Location del ánfora o null si no se puede parsear
-     */
     private Location getAnforaLocationFromId(String anforaId) {
         try {
             String[] parts = anforaId.split("_");
@@ -223,41 +211,33 @@ public class GuiListener implements Listener {
             return;
         }
 
-        LevelManager.LevelInfo levelInfo = LevelManager.getLevelInfo(anforaData.getLevel());
-        double spaceAvailable = levelInfo.getMaxExperience() - anforaData.getExperience();
-
-        if (spaceAvailable <= 0) {
-            player.sendMessage("§cEl ánfora está llena.");
-            return;
-        }
-
         int playerCurrentExp = ExperienceManager.getTotalExperience(player);
         int playerTargetExp = ExperienceManager.getTotalExperience(player.getLevel() - levels, 0);
         int expToDeposit = playerCurrentExp - playerTargetExp;
 
-        int actualAmountToDeposit = (int) Math.min(expToDeposit, spaceAvailable);
+        if (expToDeposit <= 0) return;
 
-        if (actualAmountToDeposit <= 0) {
-            player.sendMessage("§cEl ánfora no tiene suficiente capacidad para almacenar esa cantidad de experiencia.");
-            return;
+        int actualAmountDeposited = LevelManager.addExperience(anforaData, expToDeposit);
+
+        if (actualAmountDeposited > 0) {
+            ExperienceManager.setTotalExperience(player, playerCurrentExp - actualAmountDeposited);
+
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                anforaDataManager.saveAnfora(anforaData);
+            });
+
+            Location anforaLocation = getAnforaLocationFromId(anforaId);
+            if (anforaLocation != null) {
+                EffectsManager.playDepositEffect(player, anforaLocation);
+            }
+
+            player.sendMessage("§aHas depositado " + actualAmountDeposited + " puntos de experiencia.");
+            if (actualAmountDeposited < expToDeposit) {
+                player.sendMessage("§cEl ánfora ha alcanzado su capacidad máxima.");
+            }
+        } else {
+            player.sendMessage("§cEl ánfora está llena.");
         }
-
-        // Actualizar datos en memoria (operación rápida)
-        anforaData.addExperience(actualAmountToDeposit);
-        ExperienceManager.setTotalExperience(player, playerCurrentExp - actualAmountToDeposit);
-        
-        // Guardar en DB de forma asíncrona (no bloquea el main thread)
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            anforaDataManager.saveAnfora(anforaData);
-        });
-
-        // Reproducir animación de partículas al depositar
-        Location anforaLocation = getAnforaLocationFromId(anforaId);
-        if (anforaLocation != null) {
-            ParticleAnimations.playDepositAnimation(plugin, player.getLocation(), anforaLocation);
-        }
-
-        player.sendMessage("§aHas depositado " + actualAmountToDeposit + " puntos de experiencia.");
     }
 
     private void withdrawExperience(Player player, AnforaData anforaData, String anforaId, int levels) {
@@ -266,19 +246,16 @@ public class GuiListener implements Listener {
         int expToWithdraw = playerTargetExp - playerCurrentExp;
 
         if (anforaData.getExperience() >= expToWithdraw) {
-            // Actualizar datos en memoria (operación rápida)
             anforaData.setExperience(anforaData.getExperience() - expToWithdraw);
             ExperienceManager.setTotalExperience(player, playerCurrentExp + expToWithdraw);
             
-            // Guardar en DB de forma asíncrona (no bloquea el main thread)
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                 anforaDataManager.saveAnfora(anforaData);
             });
             
-            // Reproducir animación de partículas al retirar
             Location anforaLocation = getAnforaLocationFromId(anforaId);
             if (anforaLocation != null) {
-                ParticleAnimations.playWithdrawAnimation(plugin, anforaLocation, player.getLocation());
+                EffectsManager.playWithdrawEffect(player, anforaLocation);
             }
             
             player.sendMessage("§aHas retirado " + expToWithdraw + " puntos de experiencia.");

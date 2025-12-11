@@ -23,13 +23,74 @@ Anfora Resonante es un plugin de Spigot que introduce un nuevo bloque personaliz
 
 ## ⌨️ Comandos
 
-| Comando                               | Descripción                                       | Permiso                  |
-| ------------------------------------- | ------------------------------------------------- | ------------------------ |
-| `/anfora give <jugador> [cantidad]`   | Da un ánfora nueva (Nivel 1, 0 XP) a un jugador.  | `anforaxp.admin.give`    |
-| `/anfora list`                        | Muestra la ubicación de tus ánforas colocadas.    | `anforaxp.command.list`  |
-| `/anfora help`                        | Muestra todos los comandos disponibles para ti.   | `anforaxp.command.help`  |
+A continuación se detallan los comandos disponibles y sus respectivos permisos.
 
-El sistema de autocompletado (Tab) sugiere subcomandos, nombres de jugadores en línea y cantidades.
+| Comando                                       | Descripción                                                                 | Permiso                         |
+| --------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------- |
+| `/anfora help`                                | Muestra todos los comandos disponibles para el jugador.                     | `anforaresonante.player.help`   |
+| `/anfora list`                                | Muestra la ubicación de las ánforas que el jugador tiene colocadas.         | `anforaresonante.player.list`   |
+| `/anfora give <jugador> [cant] [nivel]`       | Entrega a un jugador una cantidad de ánforas del nivel especificado.        | `anforaresonante.admin.give`    |
+| `/anfora setlevel <nivel> [uuid]`             | Establece el nivel de un ánfora. Si no se provee UUID, afecta a la de la mano. | `anforaresonante.admin.setlevel`|
+| `/anfora setexp <xp> [uuid]`                  | Establece la experiencia de un ánfora. Si no se provee UUID, afecta a la de la mano. | `anforaresonante.admin.setxp` |
+| `/anfora reload`                              | Recarga los archivos de configuración del plugin.                           | `anforaresonante.admin.reload`  |
+
+El sistema de autocompletado (Tab) sugiere subcomandos, nombres de jugadores, cantidades y niveles.
+
+##  Placeholders
+
+### Placeholders Internos
+
+Estos placeholders pueden ser usados en el archivo `messages.yml` para mostrar información dinámica.
+
+| Placeholder          | Descripción                                             |
+| -------------------- | ------------------------------------------------------- |
+| `{player}`           | Muestra el nombre del jugador objetivo.                 |
+| `{owner}`            | Muestra el nombre del propietario de un ánfora.         |
+| `{amount}`           | La cantidad de ítems o experiencia.                     |
+| `{anfora_count}`     | El número de ánforas.                                   |
+| `{xp}`               | La cantidad de puntos de experiencia.                   |
+| `{command}`          | El nombre de un comando.                                |
+| `{description}`      | La descripción de un comando.                           |
+| `{number}`           | Un número genérico usado en mensajes de error.          |
+| `{level}`            | El nivel de un ánfora.                                  |
+| `{world}`            | El nombre del mundo donde se encuentra un ánfora.       |
+| `{x}`, `{y}`, `{z}`  | Las coordenadas de un ánfora.                           |
+| `{current_capacity}` | La experiencia actual almacenada en un ánfora.          |
+| `{max_capacity}`     | La capacidad máxima de experiencia de un ánfora.        |
+| `{exp_amount}`       | Una cantidad específica de experiencia.                 |
+| `{uuid}`             | El Identificador Único de un ánfora.                    |
+| `{max_level}`        | El nivel máximo que un ánfora puede alcanzar.           |
+
+### Placeholders de PlaceholderAPI
+
+Si tienes PlaceholderAPI instalado, puedes usar los siguientes placeholders en cualquier otro plugin compatible (ej. scoreboards, chat).
+
+**Placeholders Generales del Jugador:**
+
+| Placeholder              | Descripción                                                        |
+| ------------------------ | ------------------------------------------------------------------ |
+| `%anfora_count%`         | Muestra el número total de ánforas que posee el jugador.           |
+| `%anfora_total_exp%`     | Muestra la suma de la experiencia en TODAS las ánforas del jugador.|
+| `%anfora_nearest_ubi%`   | Muestra las coordenadas del ánfora más cercana al jugador.         |
+
+**Placeholders Específicos:**
+
+| Placeholder                | Descripción                                                 |
+| -------------------------- | ----------------------------------------------------------- |
+| `%anfora_owner_<uuid>%`    | Muestra el nombre del propietario de un ánfora específica usando su UUID (el que se ve en el ítem). |
+
+**Placeholders por ID Local (Avanzado):**
+
+Estos placeholders requieren un ID numérico local del ánfora, que corresponde al orden en que fueron creadas por un jugador. Su uso es complejo y está pensado para configuraciones avanzadas.
+
+| Placeholder                        | Descripción                                                       |
+| ---------------------------------- | ----------------------------------------------------------------- |
+| `%anfora_exp_<id>`                 | Experiencia del ánfora con el ID local especificado.              |
+| `%anfora_maxexp_<id>`              | Experiencia máxima del ánfora con el ID local especificado.       |
+| `%anfora_exppercentage_<id>`       | Porcentaje de experiencia del ánfora con el ID local especificado.|
+| `%anfora_expleft_<id>`             | Experiencia restante para el siguiente nivel.                     |
+| `%anfora_ubi_<id>`                 | Ubicación del ánfora con el ID local especificado.                |
+| `%anfora_nivel_<id>`               | Nivel del ánfora con el ID local especificado.                    |
 
 ## 🖥️ Interfaz Gráfica (GUI)
 

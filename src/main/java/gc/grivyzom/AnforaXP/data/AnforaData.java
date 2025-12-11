@@ -12,7 +12,7 @@ public class AnforaData {
     private final String ownerName; // Nuevo campo para el nombre del propietario
     private Location location;
     private int level;
-    private double experience;
+    private int experience;
 
     public AnforaData(String id, UUID uniqueId, UUID ownerUUID, String ownerName) { // Constructor actualizado
         this.id = id;
@@ -20,6 +20,7 @@ public class AnforaData {
         this.ownerUUID = ownerUUID;
         this.ownerName = ownerName;
         this.level = 1; // Initialize level to 1
+        this.experience = 0;
     }
 
     // Getters and setters
@@ -55,20 +56,12 @@ public class AnforaData {
         this.level = level;
     }
 
-    public double getExperience() {
+    public int getExperience() {
         return experience;
     }
 
-    public void setExperience(double experience) {
+    public void setExperience(int experience) {
         this.experience = experience;
     }
-
-    public void addExperience(double amount) {
-        this.experience += amount;
-    }
-
-    public double getMaxExperience() {
-        // Placeholder formula: Max experience increases with level
-        return this.level * 1000;
-    }
 }
+

@@ -52,18 +52,19 @@ public class AnforaBreakListener implements Listener {
                 // 2. Dropear el ítem personalizado.
                 loc.getWorld().dropItemNaturally(loc, anforaItem);
 
-                // 3. Actualizar PlayerData: anforaCount disminuye porque ya no está colocada.
+                // 3. Actualizar PlayerData: Sincronizar con el conteo real
+                // Eliminamos el ánfora primero para que el conteo sea correcto
+                anforaDataManager.deleteAnfora(anforaId);
+                anforaUUIDManager.removePlacedAnfora(anforaData.getUniqueId().toString());
+
                 PlayerData playerData = playerDataManager.loadPlayer(breaker.getUniqueId());
-                playerData.setAnforaCount(Math.max(0, playerData.getAnforaCount() - 1));
+                int realCount = anforaDataManager.getAnforasByOwner(breaker.getUniqueId()).size();
+                playerData.setAnforaCount(realCount);
                 playerDataManager.savePlayer(breaker.getUniqueId(), playerData);
 
                 Map<String, String> placeholders = new HashMap<>();
-                placeholders.put("anfora_count", String.valueOf(playerData.getAnforaCount()));
+                placeholders.put("anfora_count", String.valueOf(realCount));
                 breaker.sendMessage(messageManager.getMessage("anfora_picked_up", placeholders));
-
-                // 4. Eliminar el ánfora de la base de datos y del rastreador de UUIDs.
-                anforaDataManager.deleteAnfora(anforaId);
-                anforaUUIDManager.removePlacedAnfora(anforaData.getUniqueId().toString());
 
                 // 5. Reproducir sonido de desactivación del faro.
                 breaker.playSound(breaker.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 1.0f, 0.2f);

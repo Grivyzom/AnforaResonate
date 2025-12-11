@@ -63,6 +63,10 @@ public class MessageManager {
         }
     }
 
+    public void reloadMessages() {
+        loadMessages();
+    }
+
     public String getMessage(String key) {
         return getMessage(key, new HashMap<>());
     }

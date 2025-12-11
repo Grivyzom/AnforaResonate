@@ -1,0 +1,17 @@
+# Archivo de configuración de recompensas para AnforaResonante
+# Define los comandos que se ejecutarán cuando un ánfora alcance cierto nivel.
+# Puedes usar los siguientes placeholders en los comandos:
+# %player% - Nombre del jugador dueño del ánfora
+# %uuid% - UUID del jugador
+# %level% - El nivel alcanzado
+
+levels:
+  2:
+    - "give %player% diamond 1"
+    - "msg %player% &a¡Tu ánfora ha alcanzado el nivel 2!"
+  5:
+    - "give %player% emerald 5"
+    - "msg %player% &a¡Tu ánfora ha alcanzado el nivel 5! ¡Increíble!"
+  10:
+    - "give %player% netherite_ingot 1"
+    - "broadcast &6¡El jugador %player% ha llevado su ánfora al nivel 10!"

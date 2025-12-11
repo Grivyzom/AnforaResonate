@@ -13,26 +13,43 @@ commands:
     usage: /anfora <subcomando>
 
 permissions:
-  grivyzom.anforas_max.1:
-    description: Permite tener una ánfora resonante
-    default: true
-
-  grivyzom.anforas_max.*:
-    description: Permite tener ánforas ilimitadas
+  anforaresonante.*:
+    description: Acceso a todos los permisos de AnforaResonate.
     default: op
-
-  grivyzom.staff.anforas_inspect:
-    description: Inspecciona ánforas de otros jugadores
-    default: op
-
-  grivyzom.staff.anforas_transfer:
-    description: Permite transferir la propiedad de una ánfora a otro jugador
-    default: op
-
-  grivyzom.staff.anforas_upgrade:
-    description: Permite mejorar ánforas sin costo de XP
-    default: op
-
-  grivyzom.player.anforas_use:
-    description: Permite interactuar con ánforas propias
-    default: true
+    children:
+      anforaresonante.max.1:
+        description: Permite tener una ánfora resonante.
+        default: true
+      anforaresonante.max.unlimited:
+        description: Permite tener ánforas ilimitadas.
+        default: op
+      anforaresonante.player.use:
+        description: Permite interactuar con ánforas propias.
+        default: true
+      anforaresonante.player.help:
+        description: Permite usar el comando de ayuda.
+        default: true
+      anforaresonante.player.list:
+        description: Permite listar las ánforas propias.
+        default: true
+      anforaresonante.staff.inspect:
+        description: Inspecciona ánforas de otros jugadores.
+        default: op
+      anforaresonante.staff.transfer:
+        description: Permite transferir la propiedad de una ánfora a otro jugador.
+        default: op
+      anforaresonante.staff.upgrade:
+        description: Permite mejorar ánforas sin costo de XP.
+        default: op
+      anforaresonante.admin.give:
+        description: Permite dar ánforas a otros jugadores.
+        default: op
+      anforaresonante.admin.reload:
+        description: Permite recargar la configuración del plugin.
+        default: op
+      anforaresonante.admin.setlevel:
+        description: Permite establecer el nivel del ánfora de un jugador.
+        default: op
+      anforaresonante.admin.setxp:
+        description: Permite establecer la experiencia del ánfora de un jugador.
+        default: op

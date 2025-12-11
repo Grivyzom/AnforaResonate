@@ -2,9 +2,9 @@
 # Motor de base de datos disponible:
 # - yaml (por defecto)
 # - sqlite
-# - mysql
+# - mariadb
 
-database-type: yaml
+database-type: mariadb
 
 # --- Configuración del Ítem Anfora Resonante ---
 anfora-item:
@@ -15,3 +15,68 @@ anfora-item:
   hide-enchant: true # Si es true, el encantamiento no se mostrará en el ítem.
   enchantment: "UNBREAKING" # Tipo de encantamiento (ej: UNBREAKING, PROTECTION, LUCK)
   enchantment-level: 1 # Nivel del encantamiento
+
+# --- Sistema de Niveles ---
+# Configura la cantidad de experiencia TOTAL necesaria para alcanzar cada nivel.
+# El nivel del ánfora se determinará por el valor más alto que su XP total haya superado.
+# Por ejemplo, con 2600 XP, el ánfora sería nivel 3. Con 999 XP, sería nivel 1.
+leveling:
+  # El nivel 1 es el base, no necesita XP.
+  # El formato es: <nivel>: <xp_total_necesaria>
+  # Asegúrate de que los niveles estén en orden.
+  xp-per-level:
+    1: 0
+    2: 1000
+    3: 2500
+    4: 5000
+    5: 7500
+    6: 10000
+    7: 15000
+    8: 20000
+    9: 25000
+    10: 30000
+    # ... puedes añadir más niveles aquí
+
+# --- Hologramas ---
+# Requiere el plugin 'HolographicDisplays'. Si no está instalado, esta función se desactivará automáticamente.
+holograms:
+  enabled: true
+  # Altura a la que aparecerá el holograma sobre el ánfora.
+  height: 0.8
+  # Formato del texto del holograma. Puedes usar los siguientes placeholders:
+  # %owner% - Nombre del propietario.
+  # %level% - Nivel actual del ánfora.
+  # %xp% - Experiencia actual del ánfora.
+  # %xp_next_level% - Experiencia necesaria para el siguiente nivel.
+  # %xp_capacity% - Capacidad máxima de experiencia del ánfora (XP del nivel máximo).
+  format:
+    - "&b&lNivel: &e%level%"
+    - "&aXP: &f%xp% / %xp_next_level%"
+    - "&7Dueño: &f%owner%"
+
+# --- Efectos Visuales y de Sonido ---
+effects:
+  deposit:
+    sound:
+      name: "BLOCK_NOTE_BLOCK_PLING"
+      volume: 1.0
+      pitch: 1.5
+    particle:
+      name: "VILLAGER_HAPPY"
+      count: 10
+  withdraw:
+    sound:
+      name: "BLOCK_NOTE_BLOCK_PLING"
+      volume: 1.0
+      pitch: 1.0
+    particle:
+      name: "REVERSE_PORTAL"
+      count: 15
+  level_up:
+    sound:
+      name: "UI_TOAST_CHALLENGE_COMPLETE"
+      volume: 1.0
+      pitch: 1.2
+    particle:
+      name: "TOTEM_OF_UNDYING"
+      count: 20
