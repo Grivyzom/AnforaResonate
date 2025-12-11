@@ -44,7 +44,8 @@ public class AnforaInteractListener implements Listener {
 
         // Check if the block is an amphora
         if (clickedBlock.getType() == Material.DECORATED_POT) {
-            String anforaId = String.format("%s_%d_%d_%d", clickedBlock.getWorld().getName(), clickedBlock.getX(), clickedBlock.getY(), clickedBlock.getZ());
+            String anforaId = String.format("%s_%d_%d_%d", clickedBlock.getWorld().getName(), clickedBlock.getX(),
+                    clickedBlock.getY(), clickedBlock.getZ());
             AnforaData anforaData = anforaDataManager.loadAnfora(anforaId);
 
             if (anforaData != null) {
@@ -70,14 +71,22 @@ public class AnforaInteractListener implements Listener {
                         anforaData.setExperience(anforaData.getExperience() - expToWithdraw);
                         anforaDataManager.saveAnfora(anforaData);
 
+                        // Log transaction
+                        plugin.getTransactionManager().logWithdraw(
+                                player.getUniqueId(),
+                                anforaId,
+                                expToWithdraw);
+
                         // Remove one glass bottle
-                        player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+                        player.getInventory().getItemInMainHand()
+                                .setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
 
                         // Give one experience bottle
                         player.getInventory().addItem(new ItemStack(Material.EXPERIENCE_BOTTLE, 1));
 
                         player.playSound(player.getLocation(), Sound.ITEM_BOTTLE_FILL, 1.0f, 1.0f);
-                        player.sendMessage(messageManager.getMessage("exp_bottle_created", Map.of("exp_amount", String.valueOf(expToWithdraw))));
+                        player.sendMessage(messageManager.getMessage("exp_bottle_created",
+                                Map.of("exp_amount", String.valueOf(expToWithdraw))));
                     } else {
                         player.sendMessage(messageManager.getMessage("not_enough_exp_for_bottle"));
                     }
