@@ -1,5 +1,8 @@
 package gc.grivyzom.AnforaXP.data;
 
+import gc.grivyzom.AnforaXP.AnforaMain;
+import org.bukkit.Bukkit;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -8,150 +11,153 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AnforaDataManager {
 
+    private final AnforaMain plugin;
     private final StorageEngine storage;
     private final AnforaUUIDManager anforaUUIDManager;
-    
-    // Cache thread-safe para mejorar performance y evitar race conditions
     private final Map<String, AnforaData> cache = new ConcurrentHashMap<>();
-    
-    // Límite de cache para prevenir uso excesivo de memoria
     private static final int MAX_CACHE_SIZE = 1000;
 
-    public AnforaDataManager(StorageEngine storage, AnforaUUIDManager anforaUUIDManager) {
+    public AnforaDataManager(AnforaMain plugin, StorageEngine storage, AnforaUUIDManager anforaUUIDManager) {
+        this.plugin = plugin;
         this.storage = storage;
         this.anforaUUIDManager = anforaUUIDManager;
     }
 
-    /**
-     * Guarda un ánfora en el storage y actualiza el cache
-     * Thread-safe: Puede ser llamado desde cualquier thread
-     */
     public void saveAnfora(AnforaData data) {
-        if (data == null) return;
-        
-        // Actualizar cache primero (operación rápida)
+        if (data == null)
+            return;
         cache.put(data.getId(), data);
-        
-        // Luego guardar en storage (operación lenta)
-        storage.saveAnfora(data);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> storage.saveAnfora(data));
     }
 
-    /**
-     * Carga un ánfora desde cache o storage
-     * Thread-safe: Usa computeIfAbsent para operación atómica
-     */
     public AnforaData loadAnfora(String anforaId) {
-        if (anforaId == null) return null;
-        
-        // Operación atómica: si no está en cache, carga desde storage
+        if (anforaId == null)
+            return null;
         return cache.computeIfAbsent(anforaId, id -> {
-            // Verificar límite de cache antes de añadir
             if (cache.size() >= MAX_CACHE_SIZE) {
-                // Limpiar 10% del cache (las primeras entradas)
                 cleanCache(MAX_CACHE_SIZE / 10);
             }
+            // Note: This is still synchronous and can be a source of lag if the cache
+            // misses often.
+            // A full async implementation would require a significant refactor using
+            // CompletableFuture or callbacks.
             return storage.loadAnfora(id);
         });
     }
 
-    /**
-     * Elimina un ánfora del storage y del cache
-     * Thread-safe: Elimina primero del cache, luego del storage
-     */
     public void deleteAnfora(String anforaId) {
-        if (anforaId == null) return;
-        
-        // Eliminar del cache
+        if (anforaId == null)
+            return;
         AnforaData removed = cache.remove(anforaId);
-        
-        // Eliminar del storage
-        storage.deleteAnfora(anforaId);
-        
-        // Si existía en cache, eliminar su UUID del manager
-        if (removed != null && removed.getUniqueId() != null) {
-            anforaUUIDManager.removePlacedAnfora(removed.getUniqueId().toString());
-        }
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            storage.deleteAnfora(anforaId);
+            if (removed != null && removed.getUniqueId() != null) {
+                anforaUUIDManager.removePlacedAnfora(removed.getUniqueId().toString());
+            }
+        });
     }
 
-    /**
-     * Obtiene todas las ánforas de un propietario
-     * Thread-safe: Lee desde storage y actualiza cache
-     */
     public List<AnforaData> getAnforasByOwner(UUID ownerUUID) {
-        if (ownerUUID == null) return new ArrayList<>();
-        
-        List<AnforaData> ownerAnforas = new ArrayList<>();
-        
-        for (String anforaId : storage.getAllAnforaIds()) {
-            // Usar loadAnfora para aprovechar el cache
-            AnforaData anforaData = loadAnfora(anforaId);
-            
-            if (anforaData != null && anforaData.getOwnerUUID().equals(ownerUUID)) {
-                ownerAnforas.add(anforaData);
-            }
+        if (ownerUUID == null)
+            return new ArrayList<>();
+
+        // Note: This is still synchronous.
+        List<AnforaData> anforasFromStorage = storage.getAnforasByOwner(ownerUUID);
+
+        for (AnforaData anfora : anforasFromStorage) {
+            cache.put(anfora.getId(), anfora);
         }
-        
-        return ownerAnforas;
+
+        return anforasFromStorage;
     }
-    
-    /**
-     * Guarda todas las ánforas en cache al storage
-     * Útil para auto-save y shutdown
-     */
+
+    public List<AnforaData> getAllAnforas() {
+        // Note: This is still synchronous.
+        List<AnforaData> allAnforas = storage.loadAllAnforas();
+        for (AnforaData anfora : allAnforas) {
+            cache.put(anfora.getId(), anfora);
+        }
+        return allAnforas;
+    }
+
     public void saveAll() {
         for (AnforaData data : cache.values()) {
             try {
                 storage.saveAnfora(data);
             } catch (Exception e) {
-                // Log error pero continua guardando las demás
-                System.err.println("Error guardando ánfora " + data.getId() + ": " + e.getMessage());
+                plugin.getLogger().severe("Error guardando ánfora " + data.getId() + ": " + e.getMessage());
             }
         }
     }
-    
-    /**
-     * Limpia entradas del cache
-     * @param count Número de entradas a eliminar
-     */
+
     private void cleanCache(int count) {
         cache.keySet().stream()
-            .limit(count)
-            .forEach(cache::remove);
+                .limit(count)
+                .forEach(cache::remove);
     }
-    
-    /**
-     * Invalida (elimina) una entrada específica del cache
-     * Útil cuando se sabe que los datos han cambiado externamente
-     */
+
     public void invalidateCache(String anforaId) {
         cache.remove(anforaId);
     }
-    
-    /**
-     * Limpia todo el cache
-     * Útil para reloads o cuando se necesita forzar recarga desde DB
-     */
+
     public void clearCache() {
         cache.clear();
     }
-    
-    /**
-     * Obtiene el tamaño actual del cache
-     * @return Número de ánforas en cache
-     */
+
     public int getCacheSize() {
         return cache.size();
     }
-    
-    /**
-     * Pre-carga ánforas en el cache
-     * Útil para optimizar performance en startup
-     */
+
+    public AnforaData getAnforaByUUID(UUID anforaUUID) {
+        if (anforaUUID == null)
+            return null;
+
+        for (AnforaData data : cache.values()) {
+            if (data.getUniqueId().equals(anforaUUID)) {
+                return data;
+            }
+        }
+
+        // Note: This is synchronous
+        Map<String, String> uuidToIdMap = storage.getUniqueIdToAnforaIdMap();
+        String anforaId = uuidToIdMap.get(anforaUUID.toString());
+
+        if (anforaId != null) {
+            return loadAnfora(anforaId);
+        }
+
+        return null;
+    }
+
+    public String getAnforaIdByLocation(org.bukkit.Location location) {
+        if (location == null)
+            return null;
+
+        for (AnforaData data : cache.values()) {
+            if (data.getLocation() != null && data.getLocation().equals(location)) {
+                return data.getId();
+            }
+        }
+
+        // This is inefficient, but fixing it is a separate task.
+        // It's also synchronous.
+        // TODO: This is inefficient, add a method to StorageEngine to get anfora by
+        // location
+        for (String anforaId : storage.getAllAnforaIds()) {
+            AnforaData anforaData = loadAnfora(anforaId);
+            if (anforaData != null && anforaData.getLocation() != null && anforaData.getLocation().equals(location)) {
+                return anforaData.getId();
+            }
+        }
+
+        return null;
+    }
+
     public void preloadCache(List<String> anforaIds) {
+        // Note: This is synchronous
         for (String anforaId : anforaIds) {
-            if (cache.size() >= MAX_CACHE_SIZE) break;
-            
-            // Cargar en background sin bloquear
+            if (cache.size() >= MAX_CACHE_SIZE)
+                break;
             AnforaData data = storage.loadAnfora(anforaId);
             if (data != null) {
                 cache.put(anforaId, data);
